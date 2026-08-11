@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 9ead8b6fbd7efe04baf5b63aba07ba5c
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Flamingo/Flamingo.controller
+  uploadId: 835108

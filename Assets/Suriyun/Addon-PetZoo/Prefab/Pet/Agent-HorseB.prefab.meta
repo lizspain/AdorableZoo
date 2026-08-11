@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: c1afefdda83ce44aa9da6d9e143f096a
+timeCreated: 1510204294
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Pet/Agent-HorseB.prefab
+  uploadId: 835108

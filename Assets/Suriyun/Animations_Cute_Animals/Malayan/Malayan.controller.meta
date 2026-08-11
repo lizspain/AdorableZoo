@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 326695ca47334a74fa9f27b46c51eaa4
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Malayan/Malayan.controller
+  uploadId: 835108

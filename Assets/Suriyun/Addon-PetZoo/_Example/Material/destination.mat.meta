@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 5b5c1d2cf32c345c58deec5b46595b97
+timeCreated: 1509528243
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/_Example/Material/destination.mat
+  uploadId: 835108

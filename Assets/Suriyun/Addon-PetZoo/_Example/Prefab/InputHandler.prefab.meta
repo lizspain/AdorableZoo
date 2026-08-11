@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: de0ff0b2f719a4246beb9f61fd00fc42
+timeCreated: 1509525055
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/_Example/Prefab/InputHandler.prefab
+  uploadId: 835108

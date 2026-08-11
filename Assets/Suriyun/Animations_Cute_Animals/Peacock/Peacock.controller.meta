@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: d9d8149bd8cf29a4aa9b1d2f326d404e
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Peacock/Peacock.controller
+  uploadId: 835108

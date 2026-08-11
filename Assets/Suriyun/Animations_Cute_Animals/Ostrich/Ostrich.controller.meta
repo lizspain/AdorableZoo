@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 16021c869f927854b9e3b5f8a8c7fb48
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Ostrich/Ostrich.controller
+  uploadId: 835108

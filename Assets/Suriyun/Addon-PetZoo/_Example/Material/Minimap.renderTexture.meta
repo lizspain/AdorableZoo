@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 0c7245f29e5a74376b0259bc22db5608
+timeCreated: 1509517782
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 8400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/_Example/Material/Minimap.renderTexture
+  uploadId: 835108

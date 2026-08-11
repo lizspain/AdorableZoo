@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: ea50fc49b3c2ba84ab6736446ddf6def
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Crocodile/Crocodile.controller
+  uploadId: 835108

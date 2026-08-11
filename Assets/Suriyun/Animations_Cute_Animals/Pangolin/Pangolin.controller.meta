@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: a5fc49ed484953445b385d1136ded084
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Pangolin/Pangolin.controller
+  uploadId: 835108

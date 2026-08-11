@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 43530d72e884ebb438a6c7915b97e7a3
+timeCreated: 1505897457
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Cute Zoo/Prefab/BearA.prefab
+  uploadId: 835108

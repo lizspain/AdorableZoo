@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: bc8c45286b4f147c7a2288eea4adc496
+timeCreated: 1510204259
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Pet/Agent-DogB.prefab
+  uploadId: 835108

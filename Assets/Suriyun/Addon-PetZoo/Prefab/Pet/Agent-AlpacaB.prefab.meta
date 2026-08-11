@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: d66ca0f35b9f04bb69b6e1d0e667f6fb
+timeCreated: 1510130787
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Pet/Agent-AlpacaB.prefab
+  uploadId: 835108

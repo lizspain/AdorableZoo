@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: a48725661c6dd4914a2639801dd533d8
+timeCreated: 1510217801
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Zoo/Agent-Giraffe.prefab
+  uploadId: 835108

@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: bd80e592dcae0463aba54c1b8e822651
+timeCreated: 1510217816
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Zoo/Agent-Hippo.prefab
+  uploadId: 835108

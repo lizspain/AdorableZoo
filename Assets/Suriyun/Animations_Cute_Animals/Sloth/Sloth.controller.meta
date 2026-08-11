@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: dafbe67cd28fad04d9ef0bf4f1bc92a9
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Sloth/Sloth.controller
+  uploadId: 835108

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: d1ee5f985dced4df5b1e00205da9245a
+timeCreated: 1510556605
+licenseType: Store
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/readme_petzoo.txt
+  uploadId: 835108

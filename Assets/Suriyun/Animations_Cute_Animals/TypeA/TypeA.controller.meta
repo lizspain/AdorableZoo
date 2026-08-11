@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b44d55d3a669d654498cc4a4b05655ea
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/TypeA/TypeA.controller
+  uploadId: 835108

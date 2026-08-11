@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: dbb4f63164fde934ca66b89ae15021b1
+timeCreated: 1505814740
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Cute Zoo/Prefab/Zebra.prefab
+  uploadId: 835108

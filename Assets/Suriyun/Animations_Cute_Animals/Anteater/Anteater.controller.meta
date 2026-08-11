@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 78cc1138b73bcee47b42d6a6d9df7548
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Anteater/Anteater.controller
+  uploadId: 835108

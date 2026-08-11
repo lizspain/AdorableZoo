@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 61c549899f38e8742b01cf24ec84dd77
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Armadillo/Armadillo.controller
+  uploadId: 835108

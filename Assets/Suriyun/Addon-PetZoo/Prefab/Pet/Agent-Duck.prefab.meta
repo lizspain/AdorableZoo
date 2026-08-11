@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: e95310d03b04041da96f81c1e16a000f
+timeCreated: 1510204274
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Pet/Agent-Duck.prefab
+  uploadId: 835108

@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: e3caef1e42ff6436aa8fce27276b53de
+timeCreated: 1510546748
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/_Example/Code/Promoter.cs
+  uploadId: 835108

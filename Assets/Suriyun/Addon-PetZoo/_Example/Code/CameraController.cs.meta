@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 60b36d400fdb648d49882c52c4cef7c2
+timeCreated: 1510117441
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/_Example/Code/CameraController.cs
+  uploadId: 835108

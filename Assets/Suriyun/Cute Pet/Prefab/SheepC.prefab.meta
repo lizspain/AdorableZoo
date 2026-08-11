@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 89c91b2e87f45d040af746a3addf0aaa
+timeCreated: 1501598067
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Cute Pet/Prefab/SheepC.prefab
+  uploadId: 835108

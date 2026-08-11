@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: b1f543462ff8c41a68deb5c20a0ad15f
+timeCreated: 1510204317
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Pet/Agent-SheepC.prefab
+  uploadId: 835108

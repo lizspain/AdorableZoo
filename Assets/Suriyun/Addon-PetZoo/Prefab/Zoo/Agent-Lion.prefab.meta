@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 28c0ca859efaa45b4baf8cd08c65058e
+timeCreated: 1510217833
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Zoo/Agent-Lion.prefab
+  uploadId: 835108

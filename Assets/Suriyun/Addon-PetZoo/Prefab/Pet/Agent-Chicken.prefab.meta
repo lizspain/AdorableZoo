@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: f17c56eff7e84408090e30b3c11cf2d4
+timeCreated: 1510131753
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Pet/Agent-Chicken.prefab
+  uploadId: 835108

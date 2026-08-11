@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: ed7e5ebd695e17d4fb0217b099a7df6c
+timeCreated: 1501178077
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Animations_Cute_Animals/Platypus/Platypus.controller
+  uploadId: 835108

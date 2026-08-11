@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 233b9df5ab9ed4226b76af66ade90e24
+timeCreated: 1510217877
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Zoo/Agent-Zebra.prefab
+  uploadId: 835108

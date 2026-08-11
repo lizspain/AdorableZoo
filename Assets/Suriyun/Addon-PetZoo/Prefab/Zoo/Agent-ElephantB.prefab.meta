@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: dfed9f42c179241a6ac353ea01c2d4ab
+timeCreated: 1510217795
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/Prefab/Zoo/Agent-ElephantB.prefab
+  uploadId: 835108

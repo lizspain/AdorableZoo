@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 3983732428ad4dc40b3e524ab81a11e9
+timeCreated: 1505814732
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Cute Zoo/Prefab/ElephantA.prefab
+  uploadId: 835108

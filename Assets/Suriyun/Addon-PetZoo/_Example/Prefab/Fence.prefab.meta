@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: aa886f70a351644d9a30731610d136b9
+timeCreated: 1509353695
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200782
+  packageName: MEGA Cute Pet Zoo
+  packageVersion: 3.3
+  assetPath: Assets/Suriyun/Addon-PetZoo/_Example/Prefab/Fence.prefab
+  uploadId: 835108
