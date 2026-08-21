@@ -37,6 +37,9 @@ namespace RainbowZoo.Core
         /// <summary>Raised whenever a new 3-slot offer is ready to display (Offer Tableau UI, section 3).</summary>
         public event Action<OfferTableau> OnTableauReady;
 
+        /// <summary>Raised the moment the shared Care Meter fills (section 6/7).</summary>
+        public event Action OnCareMeterComplete;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -101,9 +104,9 @@ namespace RainbowZoo.Core
 
             layoutState.PlaceNext(definition.Id);
 
-            // The tableau hides itself on tap (OfferTableauController) and doesn't automatically
-            // come back -- press T (or call RequestNextTableau) to bring up the next choice.
-            // Phase 5 replaces that manual trigger with gating on the shared Care Meter filling.
+            // The tableau hides itself on tap (OfferTableauController) and only reappears once
+            // the shared Care Meter fills (ReportInteractionHearts) -- T remains as a debug
+            // shortcut for testing without needing to actually fill the meter first.
 
             return habitat;
         }
@@ -147,7 +150,34 @@ namespace RainbowZoo.Core
             {
                 controller = animal.AddComponent<AnimalController>();
             }
-            controller.Initialize(habitatCenter);
+            controller.Initialize(habitatCenter, definition, economyConfig);
+
+            var habitatRuntime = habitat.AddComponent<HabitatRuntime>();
+            habitatRuntime.Initialize(controller);
+        }
+
+        /// <summary>
+        /// AnimalController calls this after a completed Pet/Play/Feed interaction (sole writer
+        /// of ZooCareMeterState). On threshold, triggers the zoo-wide Celebration, starts the
+        /// next cycle, and requests the next Offer Tableau -- the real trigger for that request,
+        /// replacing the Space/T debug shortcuts used to test it in earlier phases.
+        /// </summary>
+        public void ReportInteractionHearts(int hearts)
+        {
+            careMeterState.AddHearts(hearts);
+            Debug.Log($"[CareMeter] {careMeterState.currentHearts}/{careMeterState.currentThreshold}");
+
+            if (!careMeterState.IsComplete) return;
+
+            OnCareMeterComplete?.Invoke();
+            foreach (var habitat in instantiatedHabitats)
+            {
+                var runtime = habitat.GetComponent<HabitatRuntime>();
+                runtime?.Animal?.PlayCelebration();
+            }
+
+            careMeterState.StartNextCycle(economyConfig.Threshold(layoutState.Count + 1));
+            RequestNextTableau();
         }
 
         /// <summary>Last tableau generated -- lets a UI that subscribes late (GameObject/script

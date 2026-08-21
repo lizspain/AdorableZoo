@@ -3,7 +3,8 @@
     "rootNamespace": "RainbowZoo",
     "references": [
         "Vendor.PetZoo",
-        "Unity.AI.Navigation"
+        "Unity.AI.Navigation",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
