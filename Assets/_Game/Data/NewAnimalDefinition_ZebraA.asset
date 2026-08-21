@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ad03985c40751346866a5c2c78de19e, type: 3}
   m_Name: NewAnimalDefinition_ZebraA
   m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.AnimalDefinition
-  id: 
+  id: Zebra
   displayName: Zebra
-  animalPrefab: {fileID: 1211756940889422, guid: dbb4f63164fde934ca66b89ae15021b1, type: 3}
+  animalPrefab: {fileID: 1883143741311550, guid: 233b9df5ab9ed4226b76af66ade90e24, type: 3}
   habitatPrefabOverride: {fileID: 0}
   animatorController: {fileID: 0}
   attachmentPoint: {fileID: 0}

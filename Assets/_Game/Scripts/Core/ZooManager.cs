@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using RainbowZoo.Animals;
+using Unity.AI.Navigation;
 using UnityEngine;
 
 namespace RainbowZoo.Core
@@ -14,20 +17,25 @@ namespace RainbowZoo.Core
 
         [SerializeField] private GameObject baseHabitatPrefab;
         [SerializeField] private ZooEconomyConfig economyConfig;
+        [SerializeField] private AnimalRoster animalRoster;
         [SerializeField] private Vector3 gridOrigin = Vector3.zero;
         [Tooltip("World-space distance between adjacent plot centers. +X per column, +Z per row.")]
         [SerializeField] private float plotSpacing = 4f;
 
-        [Header("Debug (Phase 2 placeholder -- replaced by the real Offer Tableau in Phase 3)")]
+        [Header("Debug (Phase 2 placeholder placement -- coexists with the real Offer Tableau)")]
         [SerializeField] private List<AnimalDefinition> debugAnimalPool = new List<AnimalDefinition>();
 
         private readonly ZooLayoutState layoutState = new ZooLayoutState();
         private readonly ZooCareMeterState careMeterState = new ZooCareMeterState();
         private readonly List<GameObject> instantiatedHabitats = new List<GameObject>();
+        private OfferGenerator offerGenerator;
         private int debugPoolCursor;
 
         public ZooLayoutState LayoutState => layoutState;
         public ZooCareMeterState CareMeterState => careMeterState;
+
+        /// <summary>Raised whenever a new 3-slot offer is ready to display (Offer Tableau UI, section 3).</summary>
+        public event Action<OfferTableau> OnTableauReady;
 
         private void Awake()
         {
@@ -46,6 +54,16 @@ namespace RainbowZoo.Core
             {
                 careMeterState.StartNextCycle(economyConfig.Threshold(1));
             }
+
+            if (animalRoster != null && economyConfig != null)
+            {
+                offerGenerator = new OfferGenerator(animalRoster, economyConfig);
+                RequestNextTableau();
+            }
+            else
+            {
+                Debug.LogWarning("animalRoster or economyConfig unassigned -- Offer Tableau will not be requested.", this);
+            }
         }
 
         private void Update()
@@ -53,6 +71,11 @@ namespace RainbowZoo.Core
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 PlaceNextDebugAnimal();
+            }
+
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                RequestNextTableau();
             }
         }
 
@@ -73,13 +96,70 @@ namespace RainbowZoo.Core
             habitat.name = $"Habitat_{definition.Id}_{plot}";
             instantiatedHabitats.Add(habitat);
 
+            BakeHabitatNavMesh(habitat);
+            SpawnAnimal(definition, habitat, worldPosition);
+
             layoutState.PlaceNext(definition.Id);
+
+            // The tableau hides itself on tap (OfferTableauController) and doesn't automatically
+            // come back -- press T (or call RequestNextTableau) to bring up the next choice.
+            // Phase 5 replaces that manual trigger with gating on the shared Care Meter filling.
+
             return habitat;
         }
 
         public Vector3 PlotToWorld(PlotCoordinate plot)
         {
             return gridOrigin + new Vector3((plot.Column - 1) * plotSpacing, 0f, (plot.Row - 1) * plotSpacing);
+        }
+
+        /// <summary>
+        /// Synchronous bake, scoped to just this habitat instance's own children (Floor, plus
+        /// any decoration prop) via NavMeshSurface.collectObjects = Children. Synchronous rather
+        /// than async for now -- correctness over micro-optimization at this stage, since an
+        /// animal spawning before its habitat's NavMesh exists would fail to path. Phase 9
+        /// revisits async if profiling shows the per-placement cost actually matters.
+        /// </summary>
+        private void BakeHabitatNavMesh(GameObject habitat)
+        {
+            var surface = habitat.GetComponent<NavMeshSurface>();
+            if (surface == null)
+            {
+                Debug.LogError($"Habitat prefab '{habitat.name}' has no NavMeshSurface -- was it created before the base habitat prefab was regenerated?", habitat);
+                return;
+            }
+            surface.BuildNavMesh();
+        }
+
+        private void SpawnAnimal(AnimalDefinition definition, GameObject habitat, Vector3 habitatCenter)
+        {
+            if (definition.AnimalPrefab == null)
+            {
+                Debug.LogError($"AnimalDefinition '{definition.Id}' has no Animal Prefab assigned.", this);
+                return;
+            }
+
+            var animal = Instantiate(definition.AnimalPrefab, habitatCenter, Quaternion.identity, habitat.transform);
+            animal.name = definition.Id;
+
+            var controller = animal.GetComponent<AnimalController>();
+            if (controller == null)
+            {
+                controller = animal.AddComponent<AnimalController>();
+            }
+            controller.Initialize(habitatCenter);
+        }
+
+        /// <summary>Last tableau generated -- lets a UI that subscribes late (GameObject/script
+        /// init order between separate objects isn't guaranteed) catch up immediately instead
+        /// of waiting for the next placement.</summary>
+        public OfferTableau CurrentTableau { get; private set; }
+
+        private void RequestNextTableau()
+        {
+            if (offerGenerator == null) return;
+            CurrentTableau = offerGenerator.GenerateOffer(layoutState);
+            OnTableauReady?.Invoke(CurrentTableau);
         }
 
         [ContextMenu("Debug: Place Next Animal")]

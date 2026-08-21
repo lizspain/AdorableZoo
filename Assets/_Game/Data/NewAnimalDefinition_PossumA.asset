@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ad03985c40751346866a5c2c78de19e, type: 3}
   m_Name: NewAnimalDefinition_PossumA
   m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.AnimalDefinition
-  id: 
+  id: Possum
   displayName: Possum
-  animalPrefab: {fileID: 7555983732529831861, guid: 77ad548df284e2d4fa4bb5b9aa038040, type: 3}
+  animalPrefab: {fileID: 3085116604205702717, guid: 53f190cefd92a4c8d95580333b11031c, type: 3}
   habitatPrefabOverride: {fileID: 0}
   animatorController: {fileID: 0}
   attachmentPoint: {fileID: 0}

@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="project://database/Assets/_Game/UI/USS/theme.uss" />
+    <Style src="project://database/Assets/_Game/UI/USS/OfferTableau.uss" />
+    <ui:VisualElement name="offer-tableau-root" class="offer-tableau-root rainbow-zoo-theme">
+        <ui:VisualElement name="slot-row" class="slot-row">
+            <ui:Button name="slot-0" class="offer-slot" />
+            <ui:Button name="slot-1" class="offer-slot" />
+            <ui:Button name="slot-2" class="offer-slot" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

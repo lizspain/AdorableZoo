@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ad03985c40751346866a5c2c78de19e, type: 3}
   m_Name: NewAnimalDefinition_ElephantA
   m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.AnimalDefinition
-  id: 
+  id: Elephant
   displayName: Elephant
-  animalPrefab: {fileID: 1848133096594584, guid: 3983732428ad4dc40b3e524ab81a11e9, type: 3}
+  animalPrefab: {fileID: 1422595996776912, guid: 6430e88481a5848a3a756beaf3f35b9a, type: 3}
   habitatPrefabOverride: {fileID: 0}
   animatorController: {fileID: 0}
   attachmentPoint: {fileID: 0}

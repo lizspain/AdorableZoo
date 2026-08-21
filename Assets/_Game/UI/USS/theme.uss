@@ -1,0 +1,16 @@
+/*
+ * Rainbow Zoo shared design tokens -- placeholder values derived from the design doc's
+ * "dyed birchwood, jewel-tone" palette description (rose/cobalt/emerald/gold/deep-lilac
+ * dyes over a birch base), pending real values pulled from Figma. Apply the
+ * "rainbow-zoo-theme" class to a screen's root VisualElement to use these.
+ */
+.rainbow-zoo-theme {
+    --color-rose-birch: #B96A72;
+    --color-cobalt-birch: #3B6B8C;
+    --color-emerald-birch: #5F7A63;
+    --color-gold-birch: #B8912F;
+    --color-gold-birch-light: #F4E7C6;
+    --color-lilac-birch: #7A5C8C;
+    --color-ink: #3A2F27;
+    --color-birch-base: #E8D9BE;
+}

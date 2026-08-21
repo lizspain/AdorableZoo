@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ad03985c40751346866a5c2c78de19e, type: 3}
   m_Name: NewAnimalDefinition_CatA
   m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.AnimalDefinition
-  id: 
+  id: White Cat
   displayName: Cat
-  animalPrefab: {fileID: 1113992397758762, guid: d9d2069a97addf549a2243b3b3b34233, type: 3}
+  animalPrefab: {fileID: 1186309466760236, guid: e345193c428d146cd96f6d5f842ebfac, type: 3}
   habitatPrefabOverride: {fileID: 0}
   animatorController: {fileID: 0}
   attachmentPoint: {fileID: 0}

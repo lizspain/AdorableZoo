@@ -49,6 +49,13 @@ namespace RainbowZoo.Core
         public GameObject CelebrationVfx => celebrationVfx;
         public bool IsMythical => isMythical;
         public string RarityTag => rarityTag;
+
+        /// <summary>Test-only construction hook (Game.Core.Tests only, via InternalsVisibleTo) -- AnimalDefinition assets are otherwise authored exclusively through the Inspector.</summary>
+        internal void ConfigureForTests(string id, bool isMythical)
+        {
+            this.id = id;
+            this.isMythical = isMythical;
+        }
     }
 
     [System.Serializable]

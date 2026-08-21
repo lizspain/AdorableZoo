@@ -1,0 +1,36 @@
+.offer-tableau-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-row {
+    flex-direction: row;
+}
+
+.offer-slot {
+    width: 180px;
+    height: 220px;
+    margin-left: 16px;
+    margin-right: 16px;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    background-color: var(--color-birch-base);
+    border-width: 4px;
+    border-color: var(--color-gold-birch);
+    color: var(--color-ink);
+    font-size: 20px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.offer-slot--mythical {
+    border-color: var(--color-lilac-birch);
+    background-color: var(--color-gold-birch-light);
+}

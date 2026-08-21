@@ -2,7 +2,8 @@
     "name": "Game.Runtime",
     "rootNamespace": "RainbowZoo",
     "references": [
-        "Vendor.PetZoo"
+        "Vendor.PetZoo",
+        "Unity.AI.Navigation"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,5 +1,7 @@
+using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace RainbowZoo.Editor
 {
@@ -57,6 +59,15 @@ namespace RainbowZoo.Editor
             var decorationAnchor = new GameObject("DecorationAnchor");
             decorationAnchor.transform.SetParent(root.transform, false);
             decorationAnchor.transform.localPosition = new Vector3(0f, 0f, 0.5f);
+
+            // Scoped to this habitat's own children (just Floor, plus any decoration prop added
+            // later) so each instance bakes only its own small area, independent of every other
+            // habitat in the zoo. Baking from render meshes, not colliders, means the invisible
+            // Walls (collider-only, no renderer) never become walkable surface -- the walkable
+            // area naturally ends at the Floor's edge, which already lines up with the walls.
+            var surface = root.AddComponent<NavMeshSurface>();
+            surface.collectObjects = CollectObjects.Children;
+            surface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
 
             PrefabUtility.SaveAsPrefabAsset(root, OutputPath, out bool success);
             Object.DestroyImmediate(root);
