@@ -1,3 +1,4 @@
+using RainbowZoo.Animals;
 using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEngine;
@@ -14,8 +15,8 @@ namespace RainbowZoo.Editor
     /// </summary>
     public static class HabitatPrefabBuilder
     {
-        private const float Size = 4f;
-        private const float Half = Size / 2f;
+        private const float Half = HabitatRuntime.HalfExtent;
+        private const float Size = Half * 2f;
         private const float WallHeight = 1.5f;
         private const float WallThickness = 0.2f;
         private const string OutputFolder = "Assets/_Game/Prefabs";
@@ -52,9 +53,13 @@ namespace RainbowZoo.Editor
             CreateWall(walls.transform, "Wall_East", new Vector3(Half, WallHeight / 2f, 0f), new Vector3(WallThickness, WallHeight, Size));
             CreateWall(walls.transform, "Wall_West", new Vector3(-Half, WallHeight / 2f, 0f), new Vector3(WallThickness, WallHeight, Size));
 
+            // Inset from the exact wall edge (not -Half): NavMesh baking erodes the walkable area
+            // inward from the raw mesh boundary by the registered agent radius, so a destination
+            // placed exactly at the wall was never actually reachable -- the agent could get
+            // close but never within its arrival threshold, stalling forever mid-carry.
             var toyDropPoint = new GameObject("ToyDropPoint");
             toyDropPoint.transform.SetParent(root.transform, false);
-            toyDropPoint.transform.localPosition = new Vector3(0f, 0f, -Half);
+            toyDropPoint.transform.localPosition = new Vector3(0f, 0f, -(Half - 1f));
 
             var decorationAnchor = new GameObject("DecorationAnchor");
             decorationAnchor.transform.SetParent(root.transform, false);

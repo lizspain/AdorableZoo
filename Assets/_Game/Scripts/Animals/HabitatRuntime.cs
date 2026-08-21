@@ -1,3 +1,4 @@
+using RainbowZoo.Core;
 using UnityEngine;
 
 namespace RainbowZoo.Animals
@@ -10,9 +11,19 @@ namespace RainbowZoo.Animals
     /// </summary>
     public sealed class HabitatRuntime : MonoBehaviour
     {
+        /// <summary>
+        /// Half the habitat footprint's side length (matches HabitatPrefabBuilder's 4x4 Floor/
+        /// Walls) -- the single source of truth both the habitat-authoring tool and any runtime
+        /// bounds-clamping (e.g. keeping the dragged Toy inside the walls) build from.
+        /// </summary>
+        public const float HalfExtent = 2f;
+
         public AnimalController Animal { get; private set; }
         public Transform ToyDropPoint { get; private set; }
         public Transform FoodDish { get; private set; }
+
+        /// <summary>This habitat's own Toy (one per habitat, not shared zoo-wide -- see ToyController).</summary>
+        public ToyController Toy => GetComponent<ToyController>();
 
         public void Initialize(AnimalController animal)
         {

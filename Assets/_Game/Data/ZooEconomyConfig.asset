@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e60fde868ad73243913943c4864c32a, type: 3}
   m_Name: ZooEconomyConfig
   m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.ZooEconomyConfig
-  petHearts: 1
-  playHearts: 2
-  feedHearts: 1
+  petHearts: 2
+  playHearts: 4
+  feedHearts: 2
   thresholdBase: 10.5
   thresholdGrowthPerAnimal: 1.4
   thresholdAccelPerAnimal: 0.6
   mythicalProbability: 0.05
   ownedAnimalWeightMultiplier: 0.5
-  chaseSpeed: 4
-  petLockSeconds: 1.5
-  feedLockSeconds: 1.5
-  toyDropDurationSeconds: 3
+  chaseSpeed: 2
+  petLockSeconds: 0.5
+  feedLockSeconds: 1
+  toyDropDurationSeconds: 1.5

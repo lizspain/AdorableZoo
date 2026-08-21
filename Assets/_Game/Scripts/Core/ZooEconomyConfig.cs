@@ -28,10 +28,10 @@ namespace RainbowZoo.Core
         [SerializeField] private float chaseSpeed = 4f;
 
         [Header("Interaction Locks")]
-        [Tooltip("Seconds an animal ignores further input while its Pet reaction plays.")]
-        [SerializeField] private float petLockSeconds = 1.5f;
-        [Tooltip("Seconds an animal ignores further input while its Feed reaction plays.")]
-        [SerializeField] private float feedLockSeconds = 1.5f;
+        [Tooltip("Seconds an animal's Pet reaction plays before it's free again. A different interaction requested during this window is queued and fires immediately once it ends, rather than being dropped.")]
+        [SerializeField] private float petLockSeconds = 0.5f;
+        [Tooltip("Seconds an animal's Feed reaction plays before it's free again. Same queuing rule as Pet.")]
+        [SerializeField] private float feedLockSeconds = 0.5f;
 
         [Header("Shared Toy")]
         [Tooltip("Seconds the shared Toy remains visible at the habitat's Toy Drop Point before despawning back to the pool.")]

@@ -150,10 +150,17 @@ namespace RainbowZoo.Core
             {
                 controller = animal.AddComponent<AnimalController>();
             }
-            controller.Initialize(habitatCenter, definition, economyConfig);
 
+            // HabitatRuntime resolves ToyDropPoint/FoodDish before AnimalController.Initialize
+            // needs FoodDish (Feed now walks the animal there rather than reacting in place).
             var habitatRuntime = habitat.AddComponent<HabitatRuntime>();
             habitatRuntime.Initialize(controller);
+
+            controller.Initialize(habitatCenter, definition, economyConfig, habitatRuntime.FoodDish);
+
+            // One Toy per habitat (not shared zoo-wide) -- Play on one habitat never blocks or
+            // steals from Play on another.
+            habitat.AddComponent<ToyController>();
         }
 
         /// <summary>
