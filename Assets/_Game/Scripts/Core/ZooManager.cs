@@ -40,6 +40,9 @@ namespace RainbowZoo.Core
         /// <summary>Raised the moment the shared Care Meter fills (section 6/7).</summary>
         public event Action OnCareMeterComplete;
 
+        /// <summary>Raised after each new habitat is placed and recorded, so CameraRig (section 11) can refresh its framing.</summary>
+        public event Action<PlotCoordinate> OnHabitatPlaced;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -103,6 +106,7 @@ namespace RainbowZoo.Core
             SpawnAnimal(definition, habitat, worldPosition);
 
             layoutState.PlaceNext(definition.Id);
+            OnHabitatPlaced?.Invoke(plot);
 
             // The tableau hides itself on tap (OfferTableauController) and only reappears once
             // the shared Care Meter fills (ReportInteractionHearts) -- T remains as a debug

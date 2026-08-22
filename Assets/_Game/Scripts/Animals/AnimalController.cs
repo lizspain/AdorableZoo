@@ -57,6 +57,26 @@ namespace RainbowZoo.Animals
         private void Awake()
         {
             controllerPetZoo = GetComponent<ControllerPetZoo>();
+
+            // [RequireComponent(typeof(ControllerPetZoo))] silently adds a *blank* one (agent and
+            // mecanim both null) if this prefab doesn't already have a properly-wired instance --
+            // which happens when an AnimalDefinition's Animal Prefab points at a plain cosmetic
+            // Suriyun prefab (e.g. "BearA") instead of the Agent- variant (e.g. "Agent-BearA")
+            // that actually has NavMeshAgent + ControllerPetZoo configured. Left unchecked, that
+            // produces a cryptic NullReferenceException spamming from vendor code every frame
+            // instead of pointing at the actual mistake.
+            if (controllerPetZoo.agent == null || controllerPetZoo.mecanim == null)
+            {
+                string agentStatus = controllerPetZoo.agent != null ? "ok" : "NULL";
+                string mecanimStatus = controllerPetZoo.mecanim != null ? "ok" : "NULL";
+                Debug.LogError($"[Animal] '{name}' has an unconfigured ControllerPetZoo (agent={agentStatus}, mecanim={mecanimStatus}) -- " +
+                    "its AnimalDefinition's Animal Prefab is very likely a plain cosmetic Suriyun prefab rather than an Agent-* variant. " +
+                    "Disabling this instance to avoid a NullReferenceException spam.", this);
+                controllerPetZoo.enabled = false; // its own Update() would otherwise keep crashing on the same null agent every frame
+                enabled = false;
+                return;
+            }
+
             agent = controllerPetZoo.agent;
             agent.stoppingDistance = stoppingDistance;
         }

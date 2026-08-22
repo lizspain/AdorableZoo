@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.AnimalDefinition
   id: Mythic
   displayName: Mythic
-  animalPrefab: {fileID: 6676344973661173232, guid: bf99a507750c54549acaf67ee91ad4dc, type: 3}
+  animalPrefab: {fileID: 7345927904782734480, guid: 45ad5cced055a4fe38cc1380bbfd06e0, type: 3}
   habitatPrefabOverride: {fileID: 0}
   animatorController: {fileID: 0}
   attachmentPoint: {fileID: 0}
