@@ -1,3 +1,4 @@
+using RainbowZoo.Animals;
 using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEngine;
@@ -14,8 +15,8 @@ namespace RainbowZoo.Editor
     /// </summary>
     public static class HabitatPrefabBuilder
     {
-        private const float Size = 4f;
-        private const float Half = Size / 2f;
+        private const float Half = HabitatRuntime.HalfExtent;
+        private const float Size = Half * 2f;
         private const float WallHeight = 1.5f;
         private const float WallThickness = 0.2f;
         private const string OutputFolder = "Assets/_Game/Prefabs";
@@ -37,11 +38,17 @@ namespace RainbowZoo.Editor
             floor.transform.localPosition = new Vector3(0f, -0.1f, 0f);
             floor.transform.localScale = new Vector3(Size, 0.2f, Size);
 
+            // Confirmed via [Input] logging that both prior positions (near the +Z edge, then near
+            // -Z/Wall_South) sat close enough to a wall that its tall (1.5-unit) collider competed
+            // with the dish's short, small one for raycasts -- every logged dish-click attempt hit
+            // the wall or the floor, never the dish itself. This position is clear of all four
+            // walls (well inside the +/-Half bounds on both axes), and the dish is taller and
+            // wider besides, so there's nothing nearby for a slightly-off click to hit instead.
             var dish = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             dish.name = "FoodDish";
             dish.transform.SetParent(root.transform, false);
-            dish.transform.localPosition = new Vector3(1.3f, 0.15f, 1.3f);
-            dish.transform.localScale = new Vector3(0.4f, 0.15f, 0.4f);
+            dish.transform.localPosition = new Vector3(1f, 0.25f, 0.5f);
+            dish.transform.localScale = new Vector3(0.6f, 0.3f, 0.6f);
             var dishCollider = dish.GetComponent<Collider>();
             if (dishCollider != null) dishCollider.isTrigger = true;
 
@@ -52,9 +59,13 @@ namespace RainbowZoo.Editor
             CreateWall(walls.transform, "Wall_East", new Vector3(Half, WallHeight / 2f, 0f), new Vector3(WallThickness, WallHeight, Size));
             CreateWall(walls.transform, "Wall_West", new Vector3(-Half, WallHeight / 2f, 0f), new Vector3(WallThickness, WallHeight, Size));
 
+            // Inset from the exact wall edge (not -Half): NavMesh baking erodes the walkable area
+            // inward from the raw mesh boundary by the registered agent radius, so a destination
+            // placed exactly at the wall was never actually reachable -- the agent could get
+            // close but never within its arrival threshold, stalling forever mid-carry.
             var toyDropPoint = new GameObject("ToyDropPoint");
             toyDropPoint.transform.SetParent(root.transform, false);
-            toyDropPoint.transform.localPosition = new Vector3(0f, 0f, -Half);
+            toyDropPoint.transform.localPosition = new Vector3(0f, 0f, -(Half - 1f));
 
             var decorationAnchor = new GameObject("DecorationAnchor");
             decorationAnchor.transform.SetParent(root.transform, false);
@@ -91,6 +102,13 @@ namespace RainbowZoo.Editor
             wall.transform.localPosition = localPosition;
             var box = wall.AddComponent<BoxCollider>();
             box.size = size;
+
+            // Walls exist purely as physical containment (for the thrown Toy's Rigidbody -- NavMesh
+            // baking already handles animal containment on its own, since it only covers the Floor's
+            // extent). They were never meant to be a raycast target at all; putting them on Unity's
+            // built-in Ignore Raycast layer (paired with InputRouter's raycast mask excluding it)
+            // makes that structural, not just a matter of hoping clicks land elsewhere.
+            wall.layer = LayerMask.NameToLayer("Ignore Raycast");
         }
     }
 }
