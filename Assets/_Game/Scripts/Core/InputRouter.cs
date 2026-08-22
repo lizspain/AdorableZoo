@@ -38,6 +38,13 @@ namespace RainbowZoo.Core
         [SerializeField] private float throwUpwardBoost = 1.5f;
         [SerializeField] private float maxThrowSpeed = 6f;
 
+        // Habitat walls sit on Ignore Raycast (HabitatPrefabBuilder) since they exist purely as
+        // physical containment for the thrown Toy, never as an interaction target -- excluding
+        // that layer here is the other half of making that structural. Set in Awake(), not as a
+        // static/field initializer -- Unity doesn't allow LayerMask.NameToLayer to be called from
+        // a MonoBehaviour's static initializer context.
+        private int raycastMask;
+
         private bool gestureActive;
         private bool playModeActive;
         private Vector2 pressScreenPos;
@@ -51,6 +58,7 @@ namespace RainbowZoo.Core
         private void Awake()
         {
             if (worldCamera == null) worldCamera = Camera.main;
+            raycastMask = ~(1 << LayerMask.NameToLayer("Ignore Raycast"));
         }
 
         private void Update()
@@ -97,7 +105,11 @@ namespace RainbowZoo.Core
             pressedFoodDishHabitat = null;
 
             var ray = worldCamera.ScreenPointToRay(screenPos);
-            if (!Physics.Raycast(ray, out var hit, 500f, ~0, QueryTriggerInteraction.Collide)) return;
+            if (!Physics.Raycast(ray, out var hit, 500f, raycastMask, QueryTriggerInteraction.Collide))
+            {
+                Debug.Log($"[Input] press at {screenPos}: raycast hit nothing.");
+                return;
+            }
 
             pressedHabitat = hit.collider.GetComponentInParent<HabitatRuntime>();
             pressedAnimal = hit.collider.GetComponentInParent<AnimalController>();
@@ -106,6 +118,10 @@ namespace RainbowZoo.Core
             {
                 pressedFoodDishHabitat = pressedHabitat;
             }
+
+            Debug.Log($"[Input] press at {screenPos}: hit '{hit.collider.name}' on '{hit.collider.gameObject.name}' " +
+                $"(habitat={(pressedHabitat != null ? pressedHabitat.name : "none")}, animal={(pressedAnimal != null ? pressedAnimal.name : "none")}, " +
+                $"isFoodDish={pressedFoodDishHabitat != null})");
         }
 
         private void TryPromoteToPlayHold(Vector2 screenPos)

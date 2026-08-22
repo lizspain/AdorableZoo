@@ -46,6 +46,8 @@ namespace RainbowZoo.Animals
         private bool initialized;
         private State state = State.IdleWander;
         private QueuedInteraction queuedInteraction = QueuedInteraction.None;
+        private float lastPetTime = float.NegativeInfinity;
+        private float lastFeedTime = float.NegativeInfinity;
 
         public AnimalDefinition Definition => definition;
 
@@ -126,16 +128,22 @@ namespace RainbowZoo.Animals
         }
 
         /// <summary>
-        /// Tap on this animal's body collider. If it's free, reacts immediately; if it's mid-
-        /// reaction or mid-chase, this is queued (replacing any previously queued interaction)
-        /// and fires the instant the current one finishes -- no re-tap needed, and no waiting out
-        /// a full extra lock on top of whatever's already in progress.
+        /// Tap on this animal's body collider. Rejected outright (not queued) if still within the
+        /// anti-spam cooldown since the last Pet, regardless of whether the animal is otherwise
+        /// free -- that cooldown is deliberately separate from how long the Rest animation plays.
+        /// Otherwise: if free, reacts immediately; if mid-reaction or mid-chase, this is queued
+        /// (replacing any previously queued interaction) and fires the instant the current one
+        /// finishes -- no re-tap needed, and no waiting out a full extra lock on top of whatever's
+        /// already in progress.
         /// </summary>
         public bool TryPet()
         {
+            if (Time.time - lastPetTime < economyConfig.PetLockSeconds) return false;
+            lastPetTime = Time.time;
+
             if (state == State.IdleWander)
             {
-                BeginReact(ParamResting, economyConfig.PetLockSeconds, economyConfig.PetHearts);
+                BeginPet();
             }
             else
             {
@@ -144,9 +152,12 @@ namespace RainbowZoo.Animals
             return true;
         }
 
-        /// <summary>Tap on this habitat's food dish. Same immediate-or-queued rule as Pet.</summary>
+        /// <summary>Tap on this habitat's food dish. Same cooldown-then-immediate-or-queued rule as Pet.</summary>
         public bool TryFeed()
         {
+            if (Time.time - lastFeedTime < economyConfig.FeedLockSeconds) return false;
+            lastFeedTime = Time.time;
+
             if (state == State.IdleWander)
             {
                 BeginFeed();
@@ -158,9 +169,9 @@ namespace RainbowZoo.Animals
             return true;
         }
 
-        private void BeginReact(int animatorBoolParam, float lockSeconds, int heartsEarned)
+        private void BeginPet()
         {
-            StartCoroutine(ReactSequence(animatorBoolParam, lockSeconds, heartsEarned));
+            StartCoroutine(ReactSequence(ParamResting, economyConfig.PetAnimationSeconds, economyConfig.PetHearts));
         }
 
         private void BeginFeed()
@@ -175,7 +186,7 @@ namespace RainbowZoo.Animals
             {
                 case QueuedInteraction.Pet:
                     queuedInteraction = QueuedInteraction.None;
-                    BeginReact(ParamResting, economyConfig.PetLockSeconds, economyConfig.PetHearts);
+                    BeginPet();
                     break;
                 case QueuedInteraction.Feed:
                     queuedInteraction = QueuedInteraction.None;
@@ -259,14 +270,15 @@ namespace RainbowZoo.Animals
             ResumeAfterFree();
         }
 
-        private IEnumerator ReactSequence(int animatorBoolParam, float lockSeconds, int heartsEarned)
+        private IEnumerator ReactSequence(int animatorBoolParam, float animationSeconds, int heartsEarned)
         {
             state = State.Reacting;
             DebugInteractionVfx.SpawnBurst(transform.position + Vector3.up * 0.5f, DebugInteractionVfx.PetColor);
             controllerPetZoo.mecanim.SetBool(animatorBoolParam, true);
 
-            yield return new WaitForSeconds(lockSeconds);
+            yield return new WaitForSeconds(animationSeconds);
 
+            Debug.Log($"[Animal] {name} Animator state at end of Pet animation ({animationSeconds}s): '{controllerPetZoo.GetCurrentState()}'");
             controllerPetZoo.mecanim.SetBool(animatorBoolParam, false);
             controllerPetZoo.Jump();
             ZooManager.Instance.ReportInteractionHearts(heartsEarned);
@@ -286,7 +298,6 @@ namespace RainbowZoo.Animals
         private IEnumerator FeedSequence()
         {
             state = State.Reacting;
-            DebugInteractionVfx.SpawnBurst(transform.position + Vector3.up * 0.5f, DebugInteractionVfx.FeedColor);
             controllerPetZoo.Jump();
 
             if (foodDishTransform != null)
@@ -300,8 +311,24 @@ namespace RainbowZoo.Animals
                 }
             }
 
+            // Clear the current path and give one frame for ControllerPetZoo.Update() to feed the
+            // resulting speed=0 into the Animator before triggering Eat -- if its Idle/Eat
+            // transition is gated on speed being ~0 (as Idle/Move already are), setting the bool
+            // while the agent still had residual velocity mid-deceleration could mean the
+            // transition's condition wasn't met yet. Deliberately not touching agent.velocity
+            // directly here (tried that, suspect it's what broke Feed and Pet across the board
+            // last round -- ResetPath() alone is the well-established, safe way to stop an agent).
+            agent.ResetPath();
+            yield return null;
+
+            // At the dish, not the animal -- the VFX marks where the interaction is actually
+            // happening (the tapped food dish), not wherever the animal started from.
+            var burstPosition = foodDishTransform != null ? foodDishTransform.position : transform.position;
+            DebugInteractionVfx.SpawnBurst(burstPosition + Vector3.up * 0.3f, DebugInteractionVfx.FeedColor);
+
             controllerPetZoo.mecanim.SetBool(ParamEating, true);
-            yield return new WaitForSeconds(economyConfig.FeedLockSeconds);
+            yield return new WaitForSeconds(economyConfig.FeedAnimationSeconds);
+            Debug.Log($"[Animal] {name} Animator state at end of Feed animation ({economyConfig.FeedAnimationSeconds}s): '{controllerPetZoo.GetCurrentState()}'");
             controllerPetZoo.mecanim.SetBool(ParamEating, false);
 
             ZooManager.Instance.ReportInteractionHearts(economyConfig.FeedHearts);

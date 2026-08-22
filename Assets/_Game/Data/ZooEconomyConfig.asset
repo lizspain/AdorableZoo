@@ -21,6 +21,8 @@ MonoBehaviour:
   mythicalProbability: 0.05
   ownedAnimalWeightMultiplier: 0.5
   chaseSpeed: 2
-  petLockSeconds: 0.5
-  feedLockSeconds: 1
-  toyDropDurationSeconds: 1.5
+  petLockSeconds: 0.2
+  feedLockSeconds: 0.5
+  petAnimationSeconds: 2
+  feedAnimationSeconds: 3
+  toyDropDurationSeconds: 0.5

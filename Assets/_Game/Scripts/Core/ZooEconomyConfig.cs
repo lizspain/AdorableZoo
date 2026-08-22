@@ -27,11 +27,15 @@ namespace RainbowZoo.Core
         [Tooltip("Shared Move blend-tree speed value used for every species' Chase state (Play interaction). No per-species run tier.")]
         [SerializeField] private float chaseSpeed = 4f;
 
-        [Header("Interaction Locks")]
-        [Tooltip("Seconds an animal's Pet reaction plays before it's free again. A different interaction requested during this window is queued and fires immediately once it ends, rather than being dropped.")]
-        [SerializeField] private float petLockSeconds = 0.5f;
-        [Tooltip("Seconds an animal's Feed reaction plays before it's free again. Same queuing rule as Pet.")]
-        [SerializeField] private float feedLockSeconds = 0.5f;
+        [Header("Interaction Locks (anti-spam cooldown -- how soon the SAME interaction type can be re-triggered on an animal, independent of how long its animation plays)")]
+        [Tooltip("Seconds before another Pet is accepted on the same animal, regardless of whether it's already free again.")]
+        [SerializeField] private float petLockSeconds = 0.2f;
+        [Tooltip("Seconds before another Feed is accepted on the same animal, regardless of whether it's already free again.")]
+        [SerializeField] private float feedLockSeconds = 0.3f;
+
+        [Header("Animation Durations (how long the Rest/Eat animation actually plays before returning to Idle/Wander -- separate from the anti-spam locks above; a different interaction type requested during this window is queued and fires immediately once it ends)")]
+        [SerializeField] private float petAnimationSeconds = 1f;
+        [SerializeField] private float feedAnimationSeconds = 1.2f;
 
         [Header("Shared Toy")]
         [Tooltip("Seconds the shared Toy remains visible at the habitat's Toy Drop Point before despawning back to the pool.")]
@@ -45,6 +49,8 @@ namespace RainbowZoo.Core
         public float ChaseSpeed => chaseSpeed;
         public float PetLockSeconds => petLockSeconds;
         public float FeedLockSeconds => feedLockSeconds;
+        public float PetAnimationSeconds => petAnimationSeconds;
+        public float FeedAnimationSeconds => feedAnimationSeconds;
         public float ToyDropDurationSeconds => toyDropDurationSeconds;
 
         /// <summary>
