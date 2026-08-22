@@ -105,11 +105,7 @@ namespace RainbowZoo.Core
             pressedFoodDishHabitat = null;
 
             var ray = worldCamera.ScreenPointToRay(screenPos);
-            if (!Physics.Raycast(ray, out var hit, 500f, raycastMask, QueryTriggerInteraction.Collide))
-            {
-                Debug.Log($"[Input] press at {screenPos}: raycast hit nothing.");
-                return;
-            }
+            if (!Physics.Raycast(ray, out var hit, 500f, raycastMask, QueryTriggerInteraction.Collide)) return;
 
             pressedHabitat = hit.collider.GetComponentInParent<HabitatRuntime>();
             pressedAnimal = hit.collider.GetComponentInParent<AnimalController>();
@@ -118,10 +114,6 @@ namespace RainbowZoo.Core
             {
                 pressedFoodDishHabitat = pressedHabitat;
             }
-
-            Debug.Log($"[Input] press at {screenPos}: hit '{hit.collider.name}' on '{hit.collider.gameObject.name}' " +
-                $"(habitat={(pressedHabitat != null ? pressedHabitat.name : "none")}, animal={(pressedAnimal != null ? pressedAnimal.name : "none")}, " +
-                $"isFoodDish={pressedFoodDishHabitat != null})");
         }
 
         private void TryPromoteToPlayHold(Vector2 screenPos)

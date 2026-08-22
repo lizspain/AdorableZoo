@@ -278,7 +278,6 @@ namespace RainbowZoo.Animals
 
             yield return new WaitForSeconds(animationSeconds);
 
-            Debug.Log($"[Animal] {name} Animator state at end of Pet animation ({animationSeconds}s): '{controllerPetZoo.GetCurrentState()}'");
             controllerPetZoo.mecanim.SetBool(animatorBoolParam, false);
             controllerPetZoo.Jump();
             ZooManager.Instance.ReportInteractionHearts(heartsEarned);
@@ -328,7 +327,6 @@ namespace RainbowZoo.Animals
 
             controllerPetZoo.mecanim.SetBool(ParamEating, true);
             yield return new WaitForSeconds(economyConfig.FeedAnimationSeconds);
-            Debug.Log($"[Animal] {name} Animator state at end of Feed animation ({economyConfig.FeedAnimationSeconds}s): '{controllerPetZoo.GetCurrentState()}'");
             controllerPetZoo.mecanim.SetBool(ParamEating, false);
 
             ZooManager.Instance.ReportInteractionHearts(economyConfig.FeedHearts);
