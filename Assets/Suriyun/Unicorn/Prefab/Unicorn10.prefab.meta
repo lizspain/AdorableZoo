@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 965bd8de38ef56742958d2bf3c495c2b
+timeCreated: 1525079592
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 264905
+  packageName: Super Cute Bundle
+  packageVersion: 1.0
+  assetPath: Assets/Suriyun/Unicorn/Prefab/Unicorn10.prefab
+  uploadId: 869374
