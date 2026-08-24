@@ -1,0 +1,41 @@
+.nav-bars-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.nav-bar {
+    position: absolute;
+    background-color: var(--color-gold-birch);
+    opacity: 0.35;
+}
+
+.nav-bar--left {
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+}
+
+.nav-bar--right {
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+}
+
+.nav-bar--top {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+}
+
+.nav-bar--bottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+}

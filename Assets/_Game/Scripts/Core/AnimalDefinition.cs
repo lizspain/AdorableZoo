@@ -32,6 +32,16 @@ namespace RainbowZoo.Core
         [SerializeField] private GameObject feedVfx;
         [SerializeField] private GameObject celebrationVfx;
 
+        [Header("SFX (optional -- every action must already read clearly from animation/VFX alone)")]
+        [Tooltip("Purr/chirp on Rest.")]
+        [SerializeField] private AudioClip petSfx;
+        [Tooltip("Giggle/bark while chasing the toy.")]
+        [SerializeField] private AudioClip playSfx;
+        [Tooltip("Chomp on Eat.")]
+        [SerializeField] private AudioClip feedSfx;
+        [Tooltip("Played on the Jump celebration for a single heart-gain (Pet/Feed/Play). Not played for the zoo-wide Care Meter completion beat -- that uses AudioDirector's tableau fanfare instead, so N placed animals don't layer this clip on top of each other.")]
+        [SerializeField] private AudioClip celebrationSfx;
+
         [Header("Rarity")]
         [SerializeField] private bool isMythical;
         [SerializeField] private string rarityTag = "standard";
@@ -47,6 +57,10 @@ namespace RainbowZoo.Core
         public GameObject PlayVfx => playVfx;
         public GameObject FeedVfx => feedVfx;
         public GameObject CelebrationVfx => celebrationVfx;
+        public AudioClip PetSfx => petSfx;
+        public AudioClip PlaySfx => playSfx;
+        public AudioClip FeedSfx => feedSfx;
+        public AudioClip CelebrationSfx => celebrationSfx;
         public bool IsMythical => isMythical;
         public string RarityTag => rarityTag;
 

@@ -32,10 +32,14 @@ namespace RainbowZoo.Editor
 
             var root = new GameObject("Habitat_Base");
 
+            // Top surface at y=0.02, not exactly y=0 -- the scene's own Ground plane sits at y=0,
+            // and a Floor coplanar with it was z-fighting (both surfaces flickering for which
+            // renders on top). The tiny offset is well below anything visually noticeable as
+            // "floating" but enough to resolve the depth-buffer tie.
             var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             floor.name = "Floor";
             floor.transform.SetParent(root.transform, false);
-            floor.transform.localPosition = new Vector3(0f, -0.1f, 0f);
+            floor.transform.localPosition = new Vector3(0f, -0.08f, 0f);
             floor.transform.localScale = new Vector3(Size, 0.2f, Size);
 
             // Confirmed via [Input] logging that both prior positions (near the +Z edge, then near

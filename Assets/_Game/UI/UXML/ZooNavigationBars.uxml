@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="project://database/Assets/_Game/UI/USS/theme.uss" />
+    <Style src="project://database/Assets/_Game/UI/USS/ZooNavigationBars.uss" />
+    <ui:VisualElement name="nav-bars-root" class="nav-bars-root rainbow-zoo-theme" picking-mode="Ignore">
+        <ui:VisualElement name="bar-left" class="nav-bar nav-bar--left" />
+        <ui:VisualElement name="bar-right" class="nav-bar nav-bar--right" />
+        <ui:VisualElement name="bar-top" class="nav-bar nav-bar--top" />
+        <ui:VisualElement name="bar-bottom" class="nav-bar nav-bar--bottom" />
+    </ui:VisualElement>
+</ui:UXML>
