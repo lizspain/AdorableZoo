@@ -2,7 +2,7 @@
 
 ## Current Status (as of 2026-08-24)
 
-Phases 0–7 are implemented. **Phase 8 (Save System) is next.**
+Phases 0–8 are implemented. **Phase 9 (Performance Pass) is next.**
 
 | Phase | Status |
 |---|---|
@@ -14,10 +14,10 @@ Phases 0–7 are implemented. **Phase 8 (Save System) is next.**
 | 5 — Input, Interactions, Shared Toy, Care Meter, Celebration | ✅ Done |
 | 6 — Camera Rig | ✅ Done |
 | 7 — Audio Layer | ✅ Done |
-| 8 — Save System | ⬜ Not started — **next up** |
-| 9 — Performance Pass | ⬜ Not started |
+| 8 — Save System | ✅ Done |
+| 9 — Performance Pass | ⬜ Not started — **next up** |
 | 10 — Vertical Slice Content | 🟡 Partial — 6 placeholder `AnimalDefinition` assets (Cat, Zebra, Ostrich, Tiger, Possum, Elephant) + 1 mythical stand-in; full Cute Zoo 1–4 roster not yet authored |
-| 11 — QA & Testing Pass | 🟡 Partial — Edit Mode tests exist for `ZooEconomyConfig`, `GridPlacementPlanner`, `OfferGenerator`; no Play Mode tests yet, no moderated playtesting yet |
+| 11 — QA & Testing Pass | 🟡 Partial — Edit Mode tests exist for `ZooEconomyConfig`, `GridPlacementPlanner`, `OfferGenerator`, `SaveSystem`; no Play Mode tests yet, no moderated playtesting yet |
 
 ## Context
 
@@ -133,7 +133,7 @@ The heart of the game.
 - The doc's "fade out old SFX, wait 0.15s, then play new" chaining rule was removed after playtesting: it read as input lag (tap → silence → sound). `AudioDirector.PlaySfx` now cuts the previous voice and starts the new one immediately, no fade/gap.
 - The zoo-wide Care Meter completion Celebration (every placed animal Jumps together) is visual-only for audio purposes — each animal's own `CelebrationSfx` is suppressed for that specific jump, and `AudioDirector.PlayTableauFanfare()` plays a single dedicated fanfare clip instead, triggered by `OfferTableauController` when the tableau actually appears. This avoids every placed animal's celebration clip layering on top of each other.
 
-## Phase 8 — Save System ⬜ *(next up)*
+## Phase 8 — Save System ✅
 
 - `SaveSystem` (static service class): JSON-serialize `AnimalSaveState` + `ZooCareMeterState` + `ZooLayoutState`; temp-file-then-atomic-rename write; 1-slot rolling backup.
 - Autosave on every relevant state change (placement, completed interaction, threshold crossed) and on `OnApplicationPause`.
@@ -141,7 +141,15 @@ The heart of the game.
 
 **Testable output:** place animals, force a restart, confirm exact restoration; deliberately corrupt the primary save to verify backup fallback.
 
-## Phase 9 — Performance Pass ⬜
+**Implementation notes:**
+- Lives at `Assets/_Game/Scripts/Save/SaveSystem.cs`, saving to `Application.persistentDataPath/zoo_save.json` (+ `.backup.json` / `.tmp.json`). `SaveSystem.SaveDirectory` is a settable static property so Edit Mode tests redirect writes to a throwaway temp folder instead of the real save location.
+- `ZooManager.Start()` now loads a save (if `animalRoster` is assigned) and replays placements through the normal `PlaceAnimal` path before restoring the Care Meter's exact hearts/threshold on top -- autosaving is suppressed during that replay so it doesn't trigger N redundant writes of data just loaded.
+- Autosave fires after every `PlaceAnimal` and every `ReportInteractionHearts` call, plus on `OnApplicationPause(true)`.
+- `AnimalSaveState` gained a parameterless constructor -- `JsonUtility` reconstructs list elements via one, and the class previously only had a 3-arg constructor (which silently removes C#'s implicit default one).
+- **No in-game way to clear a save yet** -- Reset Zoo/Parental Gate is still out of scope for this plan (see bottom section). While testing, delete `zoo_save.json`/`.backup.json` directly from `Application.persistentDataPath` to start fresh.
+- Edit Mode tests (`SaveSystemTests`) cover round-trip save/load, no-save-yet, and primary-corrupted-falls-back-to-backup.
+
+## Phase 9 — Performance Pass ⬜ *(next up)*
 
 - GPU instancing for foliage, texture atlasing on Suriyun materials for URP mobile.
 - Pool celebration/heart-gain VFX — no remaining runtime `Instantiate`/`Destroy`.

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RainbowZoo.Animals;
+using RainbowZoo.Save;
 using Unity.AI.Navigation;
 using UnityEngine;
 
@@ -30,6 +31,7 @@ namespace RainbowZoo.Core
         private readonly List<GameObject> instantiatedHabitats = new List<GameObject>();
         private OfferGenerator offerGenerator;
         private int debugPoolCursor;
+        private bool isRestoringFromSave;
 
         public ZooLayoutState LayoutState => layoutState;
         public ZooCareMeterState CareMeterState => careMeterState;
@@ -56,7 +58,14 @@ namespace RainbowZoo.Core
 
         private void Start()
         {
-            if (economyConfig != null)
+            var save = animalRoster != null ? SaveSystem.Load() : null;
+            bool isFreshZoo = save == null;
+
+            if (!isFreshZoo)
+            {
+                RestoreFromSave(save);
+            }
+            else if (economyConfig != null)
             {
                 careMeterState.StartNextCycle(economyConfig.Threshold(1));
             }
@@ -64,12 +73,58 @@ namespace RainbowZoo.Core
             if (animalRoster != null && economyConfig != null)
             {
                 offerGenerator = new OfferGenerator(animalRoster, economyConfig);
-                RequestNextTableau();
+
+                // Doc: the tableau is due "at game start, and every time the zoo's shared Care
+                // Meter fills" -- a restored save already has a zoo in progress, so re-entering
+                // the app should drop the player straight back into it, not re-present a choice
+                // they're not due yet. The next tableau still arrives normally the next time
+                // ReportInteractionHearts completes the Care Meter.
+                if (isFreshZoo)
+                {
+                    RequestNextTableau();
+                }
             }
             else
             {
                 Debug.LogWarning("animalRoster or economyConfig unassigned -- Offer Tableau will not be requested.", this);
             }
+        }
+
+        /// <summary>
+        /// Replays a save's placements through the normal PlaceAnimal path -- so plots, NavMesh
+        /// bakes, and AnimalController wiring all happen exactly as they would live -- then
+        /// restores the Care Meter's exact heart count/threshold on top, since PlaceAnimal itself
+        /// never touches ZooCareMeterState. Autosaving is suppressed for the duration so replaying
+        /// N placements doesn't trigger N redundant writes of data we just loaded.
+        /// </summary>
+        private void RestoreFromSave(SaveSystem.SaveData save)
+        {
+            isRestoringFromSave = true;
+            foreach (var entry in save.layout.placedAnimals)
+            {
+                var definition = animalRoster.FindById(entry.animalDefinitionId);
+                if (definition == null)
+                {
+                    Debug.LogError($"[ZooManager] Save references unknown animal id '{entry.animalDefinitionId}' -- skipping (was it removed from the Animal Roster?). Plots for any later-placed animals in this save will no longer line up with where they originally were.", this);
+                    continue;
+                }
+                PlaceAnimal(definition);
+            }
+            isRestoringFromSave = false;
+
+            careMeterState.currentHearts = save.currentHearts;
+            careMeterState.currentThreshold = save.currentThreshold;
+        }
+
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            if (pauseStatus) SaveNow();
+        }
+
+        private void SaveNow()
+        {
+            if (isRestoringFromSave) return;
+            SaveSystem.Save(layoutState, careMeterState);
         }
 
         private void Update()
@@ -107,6 +162,7 @@ namespace RainbowZoo.Core
 
             layoutState.PlaceNext(definition.Id);
             OnHabitatPlaced?.Invoke(plot);
+            SaveNow();
 
             // The tableau hides itself on tap (OfferTableauController) and only reappears once
             // the shared Care Meter fills (ReportInteractionHearts) -- T remains as a debug
@@ -178,17 +234,20 @@ namespace RainbowZoo.Core
             careMeterState.AddHearts(hearts);
             Debug.Log($"[CareMeter] {careMeterState.currentHearts}/{careMeterState.currentThreshold}");
 
-            if (!careMeterState.IsComplete) return;
-
-            OnCareMeterComplete?.Invoke();
-            foreach (var habitat in instantiatedHabitats)
+            if (careMeterState.IsComplete)
             {
-                var runtime = habitat.GetComponent<HabitatRuntime>();
-                runtime?.Animal?.PlayCelebration();
+                OnCareMeterComplete?.Invoke();
+                foreach (var habitat in instantiatedHabitats)
+                {
+                    var runtime = habitat.GetComponent<HabitatRuntime>();
+                    runtime?.Animal?.PlayCelebration();
+                }
+
+                careMeterState.StartNextCycle(economyConfig.Threshold(layoutState.Count + 1));
+                RequestNextTableau();
             }
 
-            careMeterState.StartNextCycle(economyConfig.Threshold(layoutState.Count + 1));
-            RequestNextTableau();
+            SaveNow();
         }
 
         /// <summary>Last tableau generated -- lets a UI that subscribes late (GameObject/script
