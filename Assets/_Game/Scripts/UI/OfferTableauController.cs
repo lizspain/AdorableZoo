@@ -92,6 +92,8 @@ namespace RainbowZoo.UI
             }
 
             if (root != null) root.style.display = DisplayStyle.Flex;
+
+            AudioDirector.Instance?.PlayTableauFanfare();
         }
 
         private void OnSlotClicked(int slotIndex)

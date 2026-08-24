@@ -36,6 +36,8 @@ namespace RainbowZoo.Animals
 
         private ControllerPetZoo controllerPetZoo;
         private NavMeshAgent agent;
+        private AudioSource audioSource;
+        private string lastAnimatorState;
         private AnimalDefinition definition;
         private ZooEconomyConfig economyConfig;
         private Transform runtimeAttachmentPoint;
@@ -48,6 +50,7 @@ namespace RainbowZoo.Animals
         private QueuedInteraction queuedInteraction = QueuedInteraction.None;
         private float lastPetTime = float.NegativeInfinity;
         private float lastFeedTime = float.NegativeInfinity;
+        private bool suppressNextJumpSfx;
 
         public AnimalDefinition Definition => definition;
 
@@ -79,6 +82,10 @@ namespace RainbowZoo.Animals
 
             agent = controllerPetZoo.agent;
             agent.stoppingDistance = stoppingDistance;
+
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
         }
 
         /// <summary>Called by ZooManager once this animal's habitat NavMesh has been baked.</summary>
@@ -127,6 +134,8 @@ namespace RainbowZoo.Animals
 
         private void Update()
         {
+            PollAnimatorAudio(); // always runs, independent of our own state machine below
+
             if (!initialized || state != State.IdleWander || agent == null || !agent.isOnNavMesh) return;
 
             if (waitingAtWaypoint)
@@ -144,6 +153,55 @@ namespace RainbowZoo.Animals
             {
                 waitingAtWaypoint = true;
                 pauseTimer = UnityEngine.Random.Range(minIdlePauseSeconds, maxIdlePauseSeconds);
+            }
+        }
+
+        /// <summary>
+        /// Audio Architecture (design doc section 9): SFX are fired from Animator state
+        /// transitions, never directly from raw input. The vendor Animator Controllers can't be
+        /// edited here to add Animation Events/StateMachineBehaviours, so this polls
+        /// ControllerPetZoo's own friendly state name each frame and fires exactly once per
+        /// transition -- the same sync guarantee (audio can't drift from what's animating),
+        /// detected rather than authored. "Move" only triggers Play's SFX while we're actually
+        /// Chasing (not during ordinary ambient wandering, which is also a "Move" state).
+        /// </summary>
+        private void PollAnimatorAudio()
+        {
+            if (controllerPetZoo == null || definition == null || AudioDirector.Instance == null) return;
+
+            string current = controllerPetZoo.GetCurrentState();
+            if (current == lastAnimatorState) return;
+            lastAnimatorState = current;
+
+            switch (current)
+            {
+                case "Rest":
+                    AudioDirector.Instance.PlaySfx(audioSource, definition.PetSfx);
+                    break;
+                case "Eat":
+                    AudioDirector.Instance.PlaySfx(audioSource, definition.FeedSfx);
+                    break;
+                case "Move":
+                    if (state == State.Chasing)
+                    {
+                        AudioDirector.Instance.PlaySfx(audioSource, definition.PlaySfx);
+                    }
+                    break;
+                case "Jump":
+                    // The zoo-wide Care Meter completion beat (PlayCelebration, called on every
+                    // placed animal at once) also drives this same "Jump" state but must stay
+                    // silent here -- that moment gets its own tableau-appear SFX instead (see
+                    // AudioDirector.PlayTableauFanfare / OfferTableauController), not this
+                    // per-animal clip layered N times over each other.
+                    if (suppressNextJumpSfx)
+                    {
+                        suppressNextJumpSfx = false;
+                    }
+                    else
+                    {
+                        AudioDirector.Instance.PlaySfx(audioSource, definition.CelebrationSfx);
+                    }
+                    break;
             }
         }
 
@@ -218,9 +276,12 @@ namespace RainbowZoo.Animals
             }
         }
 
-        /// <summary>Zoo-wide Care Meter completion beat (section 7) -- every placed animal plays this together, regardless of individual state.</summary>
+        /// <summary>Zoo-wide Care Meter completion beat (section 7) -- every placed animal plays this together,
+        /// regardless of individual state. Visual only: the audio beat for this moment is the tableau's own
+        /// fanfare (AudioDirector.PlayTableauFanfare), not this animal's CelebrationSfx.</summary>
         public void PlayCelebration()
         {
+            suppressNextJumpSfx = true;
             controllerPetZoo.Jump();
         }
 
