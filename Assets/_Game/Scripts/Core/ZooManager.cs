@@ -191,7 +191,14 @@ namespace RainbowZoo.Core
                 Debug.LogError($"Habitat prefab '{habitat.name}' has no NavMeshSurface -- was it created before the base habitat prefab was regenerated?", habitat);
                 return;
             }
+
+            // Phase 9 perf pass: this per-placement bake was a documented open question (see the
+            // summary above) rather than a measured one -- log the actual cost each time so it's
+            // empirically checkable in the Console instead of just assumed cheap.
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             surface.BuildNavMesh();
+            stopwatch.Stop();
+            Debug.Log($"[Perf] NavMesh bake for '{habitat.name}' took {stopwatch.Elapsed.TotalMilliseconds:F1} ms.");
         }
 
         private void SpawnAnimal(AnimalDefinition definition, GameObject habitat, Vector3 habitatCenter)
@@ -221,6 +228,10 @@ namespace RainbowZoo.Core
             // One Toy per habitat (not shared zoo-wide) -- Play on one habitat never blocks or
             // steals from Play on another.
             habitat.AddComponent<ToyController>();
+
+            // Phase 9 perf pass: pauses this habitat's wander/audio polling and disables its
+            // containment Walls whenever it's outside the camera's frustum.
+            habitat.AddComponent<HabitatVisibilityLod>();
         }
 
         /// <summary>

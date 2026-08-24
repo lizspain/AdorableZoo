@@ -15,7 +15,7 @@ Phases 0–8 are implemented. **Phase 9 (Performance Pass) is next.**
 | 6 — Camera Rig | ✅ Done |
 | 7 — Audio Layer | ✅ Done |
 | 8 — Save System | ✅ Done |
-| 9 — Performance Pass | ⬜ Not started — **next up** |
+| 9 — Performance Pass | 🟡 Partial — see notes below for what still needs your hands-on Editor/device work |
 | 10 — Vertical Slice Content | 🟡 Partial — 6 placeholder `AnimalDefinition` assets (Cat, Zebra, Ostrich, Tiger, Possum, Elephant) + 1 mythical stand-in; full Cute Zoo 1–4 roster not yet authored |
 | 11 — QA & Testing Pass | 🟡 Partial — Edit Mode tests exist for `ZooEconomyConfig`, `GridPlacementPlanner`, `OfferGenerator`, `SaveSystem`; no Play Mode tests yet, no moderated playtesting yet |
 
@@ -149,7 +149,7 @@ The heart of the game.
 - **No in-game way to clear a save yet** -- Reset Zoo/Parental Gate is still out of scope for this plan (see bottom section). While testing, delete `zoo_save.json`/`.backup.json` directly from `Application.persistentDataPath` to start fresh.
 - Edit Mode tests (`SaveSystemTests`) cover round-trip save/load, no-save-yet, and primary-corrupted-falls-back-to-backup.
 
-## Phase 9 — Performance Pass ⬜ *(next up)*
+## Phase 9 — Performance Pass 🟡
 
 - GPU instancing for foliage, texture atlasing on Suriyun materials for URP mobile.
 - Pool celebration/heart-gain VFX — no remaining runtime `Instantiate`/`Destroy`.
@@ -158,6 +158,16 @@ The heart of the game.
 - Profile on the actual test device (see device note below), targeting stable 30fps.
 
 **Testable output:** profiler shows measurable improvement with many animals placed; a device build hits 30fps on the real test device.
+
+**Done so far (code-level, verifiable in-Editor):**
+- **Off-camera habitat simplification** — new `HabitatVisibilityLod` (one per placed habitat, checked on a 0.25s timer, not every frame): while a habitat's bounds fall outside the main camera's frustum, its containment Walls are disabled and its `AnimalController` pauses wander/audio polling and stops the NavMeshAgent (`AnimalController.SetSimplified`) rather than continuing to steer toward a destination no one can see.
+- **VFX pooling** — `DebugInteractionVfx` (the only VFX system that exists today; real celebration/heart-gain VFX prefabs are still Phase 10 content) now reuses a small pool of particle-burst GameObjects instead of `Instantiate`/`Destroy` per tap.
+- **GPU Instancing** — new Editor menu tool, `Rainbow Zoo > Performance > Enable GPU Instancing on Suriyun Materials`, batch-enables the `enableInstancing` flag across every material under `Assets/Suriyun`. Metadata-only, no visual change — **you need to run this once from the menu**, it isn't something that happens automatically.
+- **NavMesh bake timing** — `ZooManager.BakeHabitatNavMesh` now logs each bake's actual duration (`[Perf] NavMesh bake for '...' took X.X ms.`) to the Console, so the Phase 4 synchronous-bake assumption is empirically checkable without needing the full Profiler.
+
+**Still needs you, not me:**
+- **Texture atlasing** across the Suriyun materials is a real asset-authoring task (rebuilding textures, remapping UVs) that needs visual verification in the Editor — not something safe to script blind against 60+ species' worth of existing materials.
+- **Device profiling** fundamentally requires your actual test hardware; I have no way to run the Profiler or a device build myself. Worth doing once you're ready to chase the 30fps target for real.
 
 ## Phase 10 — Vertical Slice Content 🟡
 

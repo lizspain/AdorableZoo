@@ -51,6 +51,7 @@ namespace RainbowZoo.Animals
         private float lastPetTime = float.NegativeInfinity;
         private float lastFeedTime = float.NegativeInfinity;
         private bool suppressNextJumpSfx;
+        private bool isSimplified;
 
         public AnimalDefinition Definition => definition;
 
@@ -134,9 +135,12 @@ namespace RainbowZoo.Animals
 
         private void Update()
         {
-            PollAnimatorAudio(); // always runs, independent of our own state machine below
+            if (!isSimplified)
+            {
+                PollAnimatorAudio(); // always runs, independent of our own state machine below
+            }
 
-            if (!initialized || state != State.IdleWander || agent == null || !agent.isOnNavMesh) return;
+            if (!initialized || state != State.IdleWander || agent == null || !agent.isOnNavMesh || isSimplified) return;
 
             if (waitingAtWaypoint)
             {
@@ -283,6 +287,34 @@ namespace RainbowZoo.Animals
         {
             suppressNextJumpSfx = true;
             controllerPetZoo.Jump();
+        }
+
+        /// <summary>
+        /// Off-camera simplification (design doc section 13, Phase 9): pauses wander/audio-polling
+        /// while this habitat is outside the camera's frustum (HabitatVisibilityLod), and stops the
+        /// NavMeshAgent outright rather than leaving it to keep steering toward a destination no one
+        /// can see. Only touches idle wandering -- an animal can't be mid-interaction (Reacting/
+        /// Chasing) while off-camera, since the player can't tap something they can't see, so those
+        /// coroutines are left alone regardless of this flag. Resuming visibility picks a fresh
+        /// wander destination rather than resuming a possibly long-stale path.
+        /// </summary>
+        public void SetSimplified(bool simplified)
+        {
+            if (isSimplified == simplified) return;
+            isSimplified = simplified;
+
+            if (agent == null || !agent.isOnNavMesh) return;
+
+            if (isSimplified)
+            {
+                agent.isStopped = true;
+            }
+            else if (state == State.IdleWander)
+            {
+                agent.isStopped = false;
+                waitingAtWaypoint = false; // otherwise Update() ignores the fresh destination below and counts down a stale pause timer from before this animal went off-camera
+                PickNewWanderDestination();
+            }
         }
 
         /// <summary>
