@@ -31,4 +31,4 @@ MonoBehaviour:
   celebrationSfx: {fileID: 0}
   isMythical: 0
   rarityTag: standard
-  isIntroductory: 0
+  isIntroductory: 1
