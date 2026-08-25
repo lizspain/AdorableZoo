@@ -189,6 +189,15 @@ The heart of the game.
   - **Verified in a live Play session** -- Whale and Mermaid tested clean (animations and interactions both). Unicorn hasn't personally been observed yet, but its wiring re-checked identical to the other two; not appearing in one test session is expected variance (see below), not a wiring problem.
   - **`MythicStandin` removed** (2026-08-24) now that real mythicals exist -- deleted `NewAnimalDefinition_MythicStandin.asset` and pulled it out of both `AnimalRoster` and `ZooManager`'s scene debug pool. The roster now has 3 mythicals (Unicorn/Whale/Mermaid), each with roughly a `MythicalProbability / 3` chance per tableau (`OfferGenerator` picks one mythical uniformly at random whenever the outer mythical roll succeeds) -- at the default 5%, that's ~1.67% per tableau per creature, so not seeing a specific one in a short test session is normal, not a bug.
 
+## Audio Content Pass (2026-08-24)
+
+Applied SFX from `Assets/cplomedia/Animals` to 35 of the 77 `AnimalDefinition` assets (Cat already had its own dedicated clips from Phase 7). `cplomedia` only covers ~15 real-world species, far fewer than the 77-entry roster, so most matches are same-family substitutions rather than literal species matches -- all disclosed to the user rather than applied silently. Each match gets 4 clips (pet/play/feed/celebration); where a family had fewer than 4 distinct clips available, pet/play/feed share one clip and celebration always gets a different one (the two that actually fire back-to-back within a single interaction, so they're the pair that must never match — a duplicate-sounding pair was the Phase 7 audio bug).
+
+- **Exact species match:** Deer, Elephant (+ ElephantA/B), Lion, Monkey (A/B), Owl (A/B/C).
+- **Family substitution (disclosed, not literal):** Elk→Deer; Lioness/Tiger (A/B/C + the original placeholder)/Leopard (A/B)→Lion (big cats); Gorilla (A/B)→Monkey (primates); Bull/Buffalo/Bison→Cow (bovines); Wolf/Fox→Dog (canines); Zebra/Unicorn→Horse (equines -- zebra is genus *Equus*, Unicorn is horse-styled); Mule→Donkey (mule is a horse×donkey hybrid).
+- **Generic "it's a bird" substitution:** Flamingo, Ostrich, Peacock → the generic `SW_Birds*` ambience clips (no species-specific match exists for any of them).
+- **41 unmatched, no defensible substitution available:** Anteater (A/B), Armadillo (A/B), Bear (A/B), Boar (A/B), Camel (A/B), Chameleon (A/B), Chipmunk, Crocodile (A/B), Giraffe, Hippo, Iguana (A/B), Kangaroo, Koala, Malayan Tapir, Meerkat, Mermaid, Mole, Otter, Pangolin, Platypus (A/B), Porcupine, Possum (both the original placeholder and the roster-generated one), Raccoon, Red Panda, Rhino, Skunk, Sloth, Squirrel (A/B), Turtle, Whale.
+
 ## Phase 11 — QA & Testing Pass 🟡
 
 - Edit Mode tests: threshold formula, offer weighting/mythical-roll probability (statistical sampling), save/backup round-trip.

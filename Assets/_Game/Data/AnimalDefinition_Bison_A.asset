@@ -25,10 +25,10 @@ MonoBehaviour:
   playVfx: {fileID: 0}
   feedVfx: {fileID: 0}
   celebrationVfx: {fileID: 0}
-  petSfx: {fileID: 0}
-  playSfx: {fileID: 0}
-  feedSfx: {fileID: 0}
-  celebrationSfx: {fileID: 0}
+  petSfx: {fileID: 8300000, guid: 5376d440b15de3b41a3d916a8d8bdb6e, type: 3}
+  playSfx: {fileID: 8300000, guid: fe4fcebcc41ada34dbd3f4b52292e851, type: 3}
+  feedSfx: {fileID: 8300000, guid: a9108675a01796641ae36105dc33237b, type: 3}
+  celebrationSfx: {fileID: 8300000, guid: d2c3b8e6d55637445bf3f243307ffe21, type: 3}
   isMythical: 0
   rarityTag: standard
   isIntroductory: 0
