@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad03985c40751346866a5c2c78de19e, type: 3}
+  m_Name: AnimalDefinition_Camel_B
+  m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.AnimalDefinition
+  id: Camel_B
+  displayName: Camel_ B
+  animalPrefab: {fileID: 8379491264106207779, guid: c61ec98d7df3b4dca9e91d24b6e36547, type: 3}
+  habitatPrefabOverride: {fileID: 0}
+  animatorController: {fileID: 0}
+  attachmentPoint: {fileID: 0}
+  toyAppearance:
+    mesh: {fileID: 0}
+    materials: []
+  petVfx: {fileID: 0}
+  playVfx: {fileID: 0}
+  feedVfx: {fileID: 0}
+  celebrationVfx: {fileID: 0}
+  petSfx: {fileID: 0}
+  playSfx: {fileID: 0}
+  feedSfx: {fileID: 0}
+  celebrationSfx: {fileID: 0}
+  isMythical: 0
+  rarityTag: standard
+  isIntroductory: 0

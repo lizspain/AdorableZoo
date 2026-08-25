@@ -16,7 +16,7 @@ Phases 0–8 are implemented. **Phase 9 (Performance Pass) is next.**
 | 7 — Audio Layer | ✅ Done |
 | 8 — Save System | ✅ Done |
 | 9 — Performance Pass | 🟡 Partial — see notes below for what still needs your hands-on Editor/device work |
-| 10 — Vertical Slice Content | 🟡 Partial — 6 placeholder `AnimalDefinition` assets (Cat, Zebra, Ostrich, Tiger, Possum, Elephant) + 1 mythical stand-in; full Cute Zoo 1–4 roster not yet authored |
+| 10 — Vertical Slice Content | 🟡 Partial — tool built to generate the full regular Cute Zoo 1–4 roster (needs to be run in-Editor); 3 new mythical creatures imported (Mermaid, Whale, Unicorn) but blocked on Animator Controller work -- see notes below |
 | 11 — QA & Testing Pass | 🟡 Partial — Edit Mode tests exist for `ZooEconomyConfig`, `GridPlacementPlanner`, `OfferGenerator`, `SaveSystem`; no Play Mode tests yet, no moderated playtesting yet |
 
 ## Context
@@ -177,7 +177,9 @@ The heart of the game.
 
 **Testable output:** playable start-to-finish with the real Cute Zoo 1–4 roster; the placeholder mythical creature can still appear via the 5% path and behaves identically to any other animal once placed.
 
-**Current state:** 6 placeholder `AnimalDefinition` assets exist (Cat, Zebra, Ostrich, Tiger, Possum, Elephant) plus 1 mythical stand-in — a fraction of the full Cute Zoo 1–4 roster (60 species / 92 prefab variants per the design doc's Appendix A). Full roster authoring is still ahead.
+**Current state:**
+- **Regular roster:** new Editor menu tool, `Rainbow Zoo > Content > Generate Full Animal Roster (Cute Zoo 1-4)`, batch-creates one `AnimalDefinition` per vendor `Agent-*` prefab across the Zoo/Zoo2/Zoo3/Zoo4 packs (70 available, Cute Pet excluded per this plan) and registers each into `AnimalRoster`. Idempotent — safe to re-run, never touches an id that already has a definition (so the curated Cat's SFX etc. survive). **You need to run this once from the menu** — I can't trigger Editor menu items myself. New entries only get id/displayName/animalPrefab/isMythical=false/rarityTag wired up; attachmentPoint/VFX/SFX/isIntroductory are left unset per-species for you to fill in as needed (the game already degrades gracefully without them).
+- **New mythical creatures (Mermaid, Whale, Unicorn) — blocked.** You've imported the raw vendor asset packs (models/prefabs/animations), but none of them have an `Agent-*`-style wrapper, and more importantly their own Animator Controllers are incompatible with `ControllerPetZoo` (`Assets/Suriyun/Addon-PetZoo/Core/ControllerPetZoo.cs:49-53`): it hardcodes a lookup for states literally named `Idle`/`Eat`/`Rest`/`Move`/`Jump` inside a layer named exactly `"Base"`, plus `jump`/`speed`/`eating`/`resting` parameters. Confirmed the Unicorn's own controller (`Animation_check_Unicorn.controller`) uses a single `"animation"` float parameter and a layer named `"Base Layer"` instead — pointing an `AnimalDefinition` straight at a wrapped Unicorn today would crash `ControllerPetZoo.Update()` on the first frame. Each of the three needs a new Animator Controller built to match that state/parameter contract (or `ControllerPetZoo` extended to tolerate a different one) — real Animator-window work needing visual verification, not something safe to script blind. The original `MythicStandin` placeholder (`isMythical=true`, stand-in mesh) still works fine as-is in the meantime.
 
 ## Phase 11 — QA & Testing Pass 🟡
 
@@ -197,7 +199,16 @@ Each phase lists its own testable output above — play-test in the Unity Editor
 - Phase 5 onward: the full core loop should be manually played in `MyRainbowZooMain.unity` after every phase touching `ZooManager`/`AnimalController`/`InputRouter`, since these are the systems every later phase builds on.
 - Phase 9/11: an actual on-device build against the real test device is required to validate the 30fps target — Editor profiling alone isn't sufficient evidence. **Device note:** referred to as "iPhone 9 Pro" — Apple has no device by that exact name (closest matches are iPhone X or the iPhone SE 2nd gen, sometimes informally called "iPhone 9"); worth double-checking the exact model before the Phase 9 profiling pass so the min-spec target is unambiguous.
 
+## Monetization (new decision, not in the original design doc)
+
+Added 2026-08-24, during Phase 10 roster work. Not present in the original design doc or the initial version of this plan.
+
+- **Free tier:** 10 animals total — 9 regular + 1 mythic.
+- **Paid tier:** a single nominal one-time fee unlocks the full roster (not per-animal purchases, not a subscription).
+- `AnimalDefinition` now has an `isIntroductory` bool (`Assets/_Game/Scripts/Core/AnimalDefinition.cs`) marking which animals are in the free set. **This is currently just a data flag** — nothing reads it yet. `OfferGenerator`'s pool selection doesn't check it, and there's no purchase-state tracking (IAP receipt, PlayerPrefs flag, etc.) anywhere in the project. Wiring actual gating (only offering `isIntroductory` animals until purchase, plus the IAP flow itself) is separate, later work.
+- **Nobody has picked which specific 9 regular animals + 1 mythic make up the free set yet** — every generated `AnimalDefinition` currently defaults to `isIntroductory = false`. Decide and check the box per-asset in the Inspector (the 6 originally curated placeholders -- Cat, Zebra, Ostrich, Tiger, Possum, Elephant -- are a reasonable starting point for 6 of the 9, but that's a product call, not something to default silently).
+
 ## Explicitly Out of Scope for This Plan
 
 - **Settings screen & Parental Gate (incl. Reset Zoo):** deferred to a separate follow-up plan as its own UI module, after this vertical slice is implemented.
-- **Real mythical-creature assets:** unicorn/mermaid/dragon stay as placeholder stubs throughout this plan (Phases 1–11); sourcing/modeling/rigging the real models is a later, separate effort once the vertical slice is playable.
+- **Real mythical-creature assets:** unicorn/mermaid/dragon stay as placeholder stubs throughout this plan (Phases 1–11); sourcing/modeling/rigging the real models is a later, separate effort once the vertical slice is playable. **Update:** real Unicorn/Whale/Mermaid assets have since been imported (Phase 10), but wiring them in is blocked on Animator Controller work -- see Phase 10 notes above.
