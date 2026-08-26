@@ -1,0 +1,31 @@
+fileFormatVersion: 2
+guid: affdcee9fdee595489b886821ba8f05c
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 7
+  defaultSettings:
+    serializedVersion: 2
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+    preloadAudioData: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  loadInBackground: 0
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 286211
+  packageName: Mobile Games Bundle
+  packageVersion: 1.0
+  assetPath: Assets/Mobile Games Bundle/Runner Games Sound Effects and Music Pack
+    Vol.1/AUDIO/SFX/Collect_Pickup_Fillup/Rattle/SFX_Collect_Stack_Rattle_1.wav
+  uploadId: 667397

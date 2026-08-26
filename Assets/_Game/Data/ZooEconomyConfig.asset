@@ -18,7 +18,7 @@ MonoBehaviour:
   thresholdBase: 10.5
   thresholdGrowthPerAnimal: 1.4
   thresholdAccelPerAnimal: 0.6
-  mythicalProbability: 0.05
+  mythicalProbability: 1
   ownedAnimalWeightMultiplier: 0.5
   chaseSpeed: 2
   petLockSeconds: 0.2

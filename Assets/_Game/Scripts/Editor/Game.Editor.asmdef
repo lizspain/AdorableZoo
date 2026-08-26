@@ -3,6 +3,7 @@
     "rootNamespace": "RainbowZoo.Editor",
     "references": [
         "Game.Runtime",
+        "Vendor.PetZoo",
         "Unity.AI.Navigation"
     ],
     "includePlatforms": [

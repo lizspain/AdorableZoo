@@ -46,6 +46,10 @@ namespace RainbowZoo.Core
         [SerializeField] private bool isMythical;
         [SerializeField] private string rarityTag = "standard";
 
+        [Header("Access")]
+        [Tooltip("True for animals included in the free starter roster. False means this animal only becomes available after the full-unlock purchase. Not yet enforced anywhere at runtime -- OfferGenerator/purchase-state gating is separate, later work; this is just the data flag.")]
+        [SerializeField] private bool isIntroductory;
+
         public string Id => id;
         public string DisplayName => displayName;
         public GameObject AnimalPrefab => animalPrefab;
@@ -63,12 +67,14 @@ namespace RainbowZoo.Core
         public AudioClip CelebrationSfx => celebrationSfx;
         public bool IsMythical => isMythical;
         public string RarityTag => rarityTag;
+        public bool IsIntroductory => isIntroductory;
 
         /// <summary>Test-only construction hook (Game.Core.Tests only, via InternalsVisibleTo) -- AnimalDefinition assets are otherwise authored exclusively through the Inspector.</summary>
-        internal void ConfigureForTests(string id, bool isMythical)
+        internal void ConfigureForTests(string id, bool isMythical, bool isIntroductory = false)
         {
             this.id = id;
             this.isMythical = isMythical;
+            this.isIntroductory = isIntroductory;
         }
     }
 

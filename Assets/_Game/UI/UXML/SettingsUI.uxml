@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="project://database/Assets/_Game/UI/USS/theme.uss" />
+    <Style src="project://database/Assets/_Game/UI/USS/SettingsUI.uss" />
+    <ui:VisualElement name="settings-root" class="settings-root rainbow-zoo-theme" picking-mode="Ignore">
+        <ui:VisualElement name="settings-gate" class="settings-gate">
+            <ui:VisualElement name="settings-gate-fill" class="settings-gate-fill" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="settings-menu" class="settings-panel" style="display: none;">
+            <ui:Label text="Settings" class="settings-panel-title" />
+            <ui:Button name="unlock-button" text="Unlock All Animals" class="settings-button" />
+            <ui:Button name="reset-button" text="Reset Zoo" class="settings-button settings-button--danger" />
+            <ui:Button name="close-button" text="Close" class="settings-button settings-button--secondary" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="reset-confirm" class="settings-panel" style="display: none;">
+            <ui:Label text="This deletes your whole zoo. Are you sure?" class="settings-panel-title settings-panel-title--wrap" />
+            <ui:Button name="reset-confirm-yes" text="Yes, delete my zoo" class="settings-button settings-button--danger" />
+            <ui:Button name="reset-confirm-cancel" text="Cancel" class="settings-button settings-button--secondary" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

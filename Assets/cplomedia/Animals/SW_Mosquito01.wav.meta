@@ -1,0 +1,30 @@
+fileFormatVersion: 2
+guid: 006e56a444e6fc94e9fbd4c9ee61c5ea
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 7
+  defaultSettings:
+    serializedVersion: 2
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+    preloadAudioData: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  loadInBackground: 0
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 296980
+  packageName: Animal Sound FX
+  packageVersion: 1.0
+  assetPath: Assets/cplomedia/Animals/SW_Mosquito01.wav
+  uploadId: 694424

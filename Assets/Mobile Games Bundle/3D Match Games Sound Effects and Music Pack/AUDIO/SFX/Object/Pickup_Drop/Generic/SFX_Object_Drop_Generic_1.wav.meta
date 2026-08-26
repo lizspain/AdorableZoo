@@ -1,0 +1,30 @@
+fileFormatVersion: 2
+guid: 1b83e3ecadf77a34bbaa1853417dced8
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 7
+  defaultSettings:
+    serializedVersion: 2
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+    preloadAudioData: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  loadInBackground: 0
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 286211
+  packageName: Mobile Games Bundle
+  packageVersion: 1.0
+  assetPath: Assets/Mobile Games Bundle/3D Match Games Sound Effects and Music Pack/AUDIO/SFX/Object/Pickup_Drop/Generic/SFX_Object_Drop_Generic_1.wav
+  uploadId: 667397

@@ -20,13 +20,21 @@ namespace RainbowZoo.Core
             this.config = config;
         }
 
-        public OfferTableau GenerateOffer(ZooLayoutState layoutState, Random random = null)
+        /// <summary>
+        /// fullUnlockActive gates the candidate pool down to only IsIntroductory animals when
+        /// false (the free tier -- monetization model: 9 regular + 1 mythic free, the rest behind
+        /// a one-time full-roster unlock). Defaults to true so existing unlocked-by-default call
+        /// sites/tests don't need to know about the gate.
+        /// </summary>
+        public OfferTableau GenerateOffer(ZooLayoutState layoutState, Random random = null, bool fullUnlockActive = true)
         {
             random ??= new Random();
 
+            var eligible = fullUnlockActive ? roster.Animals : roster.Animals.Where(a => a.IsIntroductory);
+
             var ownedIds = new HashSet<string>(layoutState.placedAnimals.Select(a => a.animalDefinitionId));
-            var standards = roster.Animals.Where(a => !a.IsMythical).ToList();
-            var mythicals = roster.Animals.Where(a => a.IsMythical).ToList();
+            var standards = eligible.Where(a => !a.IsMythical).ToList();
+            var mythicals = eligible.Where(a => a.IsMythical).ToList();
 
             var slots = new AnimalDefinition[OfferTableau.SlotCount];
             int mythicalSlotIndex = -1;

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad03985c40751346866a5c2c78de19e, type: 3}
+  m_Name: AnimalDefinition_ElephantB
+  m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.AnimalDefinition
+  id: ElephantB
+  displayName: Elephant B
+  animalPrefab: {fileID: 1935444852937792, guid: dfed9f42c179241a6ac353ea01c2d4ab, type: 3}
+  habitatPrefabOverride: {fileID: 0}
+  animatorController: {fileID: 0}
+  attachmentPoint: {fileID: 0}
+  toyAppearance:
+    mesh: {fileID: 0}
+    materials: []
+  petVfx: {fileID: 0}
+  playVfx: {fileID: 0}
+  feedVfx: {fileID: 0}
+  celebrationVfx: {fileID: 0}
+  petSfx: {fileID: 8300000, guid: 3c050ad777eb6c34bb2f1ae31e8c4182, type: 3}
+  playSfx: {fileID: 8300000, guid: 60f084924ba5b5e47b0f07733e4377d1, type: 3}
+  feedSfx: {fileID: 8300000, guid: 1503c4f10e5e2004c8b3de63e773b72b, type: 3}
+  celebrationSfx: {fileID: 8300000, guid: 2cdf9f19ff0a54542a866e965980e95a, type: 3}
+  isMythical: 0
+  rarityTag: standard
+  isIntroductory: 0

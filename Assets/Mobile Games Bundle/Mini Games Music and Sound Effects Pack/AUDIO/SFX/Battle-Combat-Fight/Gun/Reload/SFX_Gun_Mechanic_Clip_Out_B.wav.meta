@@ -1,0 +1,30 @@
+fileFormatVersion: 2
+guid: f07b7e9dedda4da469b4038682e62d44
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 7
+  defaultSettings:
+    serializedVersion: 2
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+    preloadAudioData: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  loadInBackground: 0
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 286211
+  packageName: Mobile Games Bundle
+  packageVersion: 1.0
+  assetPath: Assets/Mobile Games Bundle/Mini Games Music and Sound Effects Pack/AUDIO/SFX/Battle-Combat-Fight/Gun/Reload/SFX_Gun_Mechanic_Clip_Out_B.wav
+  uploadId: 667397

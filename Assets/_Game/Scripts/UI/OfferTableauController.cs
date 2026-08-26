@@ -26,6 +26,11 @@ namespace RainbowZoo.UI
                 return;
             }
 
+            // The UXML/USS don't set an initial display value (defaults to visible), so without
+            // this, resuming a save -- which never calls ShowTableau on boot, see ZooManager.Start
+            // -- would leave an empty, unpopulated tableau panel sitting visible over the zoo.
+            root.style.display = DisplayStyle.None;
+
             for (int i = 0; i < OfferTableau.SlotCount; i++)
             {
                 var button = root.Q<Button>($"slot-{i}");

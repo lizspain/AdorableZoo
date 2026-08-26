@@ -115,6 +115,54 @@ namespace RainbowZoo.Tests
                 $"Owned/unowned appearance ratio {ratio:F2} too far from the configured weight multiplier {config.OwnedAnimalWeightMultiplier:F2}.");
         }
 
+        [Test]
+        public void GenerateOffer_WhenLocked_OnlyOffersIntroductoryAnimals()
+        {
+            standards[0].ConfigureForTests("standard-0", false, isIntroductory: true);
+            // standards[1..3] and mythical stay isIntroductory=false from SetUp.
+
+            var layout = new ZooLayoutState();
+            var random = new System.Random(7);
+
+            for (int i = 0; i < 500; i++)
+            {
+                var offer = generator().GenerateOffer(layout, random, fullUnlockActive: false);
+                for (int s = 0; s < OfferTableau.SlotCount; s++)
+                {
+                    var slot = offer.GetSlot(s);
+                    if (slot == null) continue;
+                    Assert.AreEqual(standards[0].Id, slot.Id,
+                        $"Locked roster should only ever offer the introductory animal, but offered '{slot.Id}'.");
+                }
+            }
+        }
+
+        [Test]
+        public void GenerateOffer_WhenUnlocked_CanOfferNonIntroductoryAnimals()
+        {
+            standards[0].ConfigureForTests("standard-0", false, isIntroductory: true);
+
+            var layout = new ZooLayoutState();
+            var random = new System.Random(7);
+            bool sawNonIntroductory = false;
+
+            for (int i = 0; i < 500 && !sawNonIntroductory; i++)
+            {
+                var offer = generator().GenerateOffer(layout, random, fullUnlockActive: true);
+                for (int s = 0; s < OfferTableau.SlotCount; s++)
+                {
+                    var slot = offer.GetSlot(s);
+                    if (slot != null && slot.Id != standards[0].Id)
+                    {
+                        sawNonIntroductory = true;
+                        break;
+                    }
+                }
+            }
+
+            Assert.IsTrue(sawNonIntroductory, "Expected the unlocked roster to eventually offer a non-introductory animal.");
+        }
+
         private OfferGenerator generator() => new OfferGenerator(roster, config);
     }
 }

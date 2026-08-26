@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad03985c40751346866a5c2c78de19e, type: 3}
+  m_Name: AnimalDefinition_Deer
+  m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.AnimalDefinition
+  id: Deer
+  displayName: Deer
+  animalPrefab: {fileID: 1785974760078152, guid: c4b7e9c78d3294ba0900e7ce6bb47e44, type: 3}
+  habitatPrefabOverride: {fileID: 0}
+  animatorController: {fileID: 0}
+  attachmentPoint: {fileID: 0}
+  toyAppearance:
+    mesh: {fileID: 0}
+    materials: []
+  petVfx: {fileID: 0}
+  playVfx: {fileID: 0}
+  feedVfx: {fileID: 0}
+  celebrationVfx: {fileID: 0}
+  petSfx: {fileID: 8300000, guid: c1b887db79bd40b43b44291bdf5fc710, type: 3}
+  playSfx: {fileID: 8300000, guid: c1b887db79bd40b43b44291bdf5fc710, type: 3}
+  feedSfx: {fileID: 8300000, guid: c1b887db79bd40b43b44291bdf5fc710, type: 3}
+  celebrationSfx: {fileID: 8300000, guid: 7359d0089f956af47a6ca9610d3e2028, type: 3}
+  isMythical: 0
+  rarityTag: standard
+  isIntroductory: 0

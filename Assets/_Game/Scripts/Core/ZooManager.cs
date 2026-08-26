@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using RainbowZoo.Animals;
+using RainbowZoo.Save;
 using Unity.AI.Navigation;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace RainbowZoo.Core
 {
@@ -30,9 +32,14 @@ namespace RainbowZoo.Core
         private readonly List<GameObject> instantiatedHabitats = new List<GameObject>();
         private OfferGenerator offerGenerator;
         private int debugPoolCursor;
+        private bool isRestoringFromSave;
+        private bool hasFullUnlock;
 
         public ZooLayoutState LayoutState => layoutState;
         public ZooCareMeterState CareMeterState => careMeterState;
+
+        /// <summary>Monetization model: 9 regular + 1 mythic animal free, the rest behind a one-time full-roster unlock (AnimalDefinition.IsIntroductory marks the free set). Gates OfferGenerator's candidate pool.</summary>
+        public bool HasFullUnlock => hasFullUnlock;
 
         /// <summary>Raised whenever a new 3-slot offer is ready to display (Offer Tableau UI, section 3).</summary>
         public event Action<OfferTableau> OnTableauReady;
@@ -56,7 +63,14 @@ namespace RainbowZoo.Core
 
         private void Start()
         {
-            if (economyConfig != null)
+            var save = animalRoster != null ? SaveSystem.Load() : null;
+            bool isFreshZoo = save == null;
+
+            if (!isFreshZoo)
+            {
+                RestoreFromSave(save);
+            }
+            else if (economyConfig != null)
             {
                 careMeterState.StartNextCycle(economyConfig.Threshold(1));
             }
@@ -64,12 +78,87 @@ namespace RainbowZoo.Core
             if (animalRoster != null && economyConfig != null)
             {
                 offerGenerator = new OfferGenerator(animalRoster, economyConfig);
-                RequestNextTableau();
+
+                // Doc: the tableau is due "at game start, and every time the zoo's shared Care
+                // Meter fills" -- a restored save already has a zoo in progress, so re-entering
+                // the app should drop the player straight back into it, not re-present a choice
+                // they're not due yet. The next tableau still arrives normally the next time
+                // ReportInteractionHearts completes the Care Meter.
+                if (isFreshZoo)
+                {
+                    RequestNextTableau();
+                }
             }
             else
             {
                 Debug.LogWarning("animalRoster or economyConfig unassigned -- Offer Tableau will not be requested.", this);
             }
+        }
+
+        /// <summary>
+        /// Replays a save's placements through the normal PlaceAnimal path -- so plots, NavMesh
+        /// bakes, and AnimalController wiring all happen exactly as they would live -- then
+        /// restores the Care Meter's exact heart count/threshold on top, since PlaceAnimal itself
+        /// never touches ZooCareMeterState. Autosaving is suppressed for the duration so replaying
+        /// N placements doesn't trigger N redundant writes of data we just loaded.
+        /// </summary>
+        private void RestoreFromSave(SaveSystem.SaveData save)
+        {
+            isRestoringFromSave = true;
+            foreach (var entry in save.layout.placedAnimals)
+            {
+                var definition = animalRoster.FindById(entry.animalDefinitionId);
+                if (definition == null)
+                {
+                    Debug.LogError($"[ZooManager] Save references unknown animal id '{entry.animalDefinitionId}' -- skipping (was it removed from the Animal Roster?). Plots for any later-placed animals in this save will no longer line up with where they originally were.", this);
+                    continue;
+                }
+                PlaceAnimal(definition);
+            }
+            isRestoringFromSave = false;
+
+            careMeterState.currentHearts = save.currentHearts;
+            careMeterState.currentThreshold = save.currentThreshold;
+            hasFullUnlock = save.hasFullUnlock;
+        }
+
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            if (pauseStatus) SaveNow();
+        }
+
+        private void SaveNow()
+        {
+            if (isRestoringFromSave) return;
+            SaveSystem.Save(layoutState, careMeterState, hasFullUnlock);
+        }
+
+        /// <summary>
+        /// Flips the local full-unlock flag and saves. This is NOT a real purchase -- there is no
+        /// payment processing here. Wiring this to an actual store transaction (Unity IAP plus App
+        /// Store/Google Play product configuration, which needs the developer's own store
+        /// accounts) is separate work this method deliberately does not attempt.
+        /// </summary>
+        public void UnlockFullRoster()
+        {
+            if (hasFullUnlock) return;
+            hasFullUnlock = true;
+            SaveNow();
+        }
+
+        /// <summary>
+        /// Reset Zoo (design doc section 12/14): deletes the save (primary + backup) and reloads
+        /// the scene, which cleanly resets every runtime system -- Care Meter, layout, placed
+        /// habitats, camera framing -- to a fresh empty zoo. Simpler and more robust than manually
+        /// tearing down each subsystem by hand. Irreversible; the caller (SettingsUIController) is
+        /// responsible for confirming with the player first.
+        /// </summary>
+        public void ResetZoo()
+        {
+            SaveSystem.DeleteSave();
+            // By name, not buildIndex -- reloads correctly in the Editor even if the scene hasn't
+            // been added to Build Settings yet, which buildIndex (-1 when unregistered) would not.
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         private void Update()
@@ -107,6 +196,7 @@ namespace RainbowZoo.Core
 
             layoutState.PlaceNext(definition.Id);
             OnHabitatPlaced?.Invoke(plot);
+            SaveNow();
 
             // The tableau hides itself on tap (OfferTableauController) and only reappears once
             // the shared Care Meter fills (ReportInteractionHearts) -- T remains as a debug
@@ -135,7 +225,14 @@ namespace RainbowZoo.Core
                 Debug.LogError($"Habitat prefab '{habitat.name}' has no NavMeshSurface -- was it created before the base habitat prefab was regenerated?", habitat);
                 return;
             }
+
+            // Phase 9 perf pass: this per-placement bake was a documented open question (see the
+            // summary above) rather than a measured one -- log the actual cost each time so it's
+            // empirically checkable in the Console instead of just assumed cheap.
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             surface.BuildNavMesh();
+            stopwatch.Stop();
+            Debug.Log($"[Perf] NavMesh bake for '{habitat.name}' took {stopwatch.Elapsed.TotalMilliseconds:F1} ms.");
         }
 
         private void SpawnAnimal(AnimalDefinition definition, GameObject habitat, Vector3 habitatCenter)
@@ -165,6 +262,10 @@ namespace RainbowZoo.Core
             // One Toy per habitat (not shared zoo-wide) -- Play on one habitat never blocks or
             // steals from Play on another.
             habitat.AddComponent<ToyController>();
+
+            // Phase 9 perf pass: pauses this habitat's wander/audio polling and disables its
+            // containment Walls whenever it's outside the camera's frustum.
+            habitat.AddComponent<HabitatVisibilityLod>();
         }
 
         /// <summary>
@@ -178,17 +279,20 @@ namespace RainbowZoo.Core
             careMeterState.AddHearts(hearts);
             Debug.Log($"[CareMeter] {careMeterState.currentHearts}/{careMeterState.currentThreshold}");
 
-            if (!careMeterState.IsComplete) return;
-
-            OnCareMeterComplete?.Invoke();
-            foreach (var habitat in instantiatedHabitats)
+            if (careMeterState.IsComplete)
             {
-                var runtime = habitat.GetComponent<HabitatRuntime>();
-                runtime?.Animal?.PlayCelebration();
+                OnCareMeterComplete?.Invoke();
+                foreach (var habitat in instantiatedHabitats)
+                {
+                    var runtime = habitat.GetComponent<HabitatRuntime>();
+                    runtime?.Animal?.PlayCelebration();
+                }
+
+                careMeterState.StartNextCycle(economyConfig.Threshold(layoutState.Count + 1));
+                RequestNextTableau();
             }
 
-            careMeterState.StartNextCycle(economyConfig.Threshold(layoutState.Count + 1));
-            RequestNextTableau();
+            SaveNow();
         }
 
         /// <summary>Last tableau generated -- lets a UI that subscribes late (GameObject/script
@@ -199,7 +303,7 @@ namespace RainbowZoo.Core
         private void RequestNextTableau()
         {
             if (offerGenerator == null) return;
-            CurrentTableau = offerGenerator.GenerateOffer(layoutState);
+            CurrentTableau = offerGenerator.GenerateOffer(layoutState, fullUnlockActive: hasFullUnlock);
             OnTableauReady?.Invoke(CurrentTableau);
         }
 

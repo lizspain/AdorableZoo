@@ -15,6 +15,11 @@ namespace RainbowZoo.Core
         public int plotColumn;
         public int plotRow;
 
+        /// <summary>Required by JsonUtility, which reconstructs instances via a parameterless constructor -- defining the constructor below removes C#'s implicit default one otherwise.</summary>
+        public AnimalSaveState()
+        {
+        }
+
         public AnimalSaveState(string animalDefinitionId, int plotColumn, int plotRow)
         {
             this.animalDefinitionId = animalDefinitionId;

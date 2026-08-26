@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad03985c40751346866a5c2c78de19e, type: 3}
+  m_Name: AnimalDefinition_MuleB
+  m_EditorClassIdentifier: Game.Runtime::RainbowZoo.Core.AnimalDefinition
+  id: MuleB
+  displayName: Mule B
+  animalPrefab: {fileID: 2595202908768455788, guid: edab1463098f047b5bf56d75614cdc8b, type: 3}
+  habitatPrefabOverride: {fileID: 0}
+  animatorController: {fileID: 0}
+  attachmentPoint: {fileID: 0}
+  toyAppearance:
+    mesh: {fileID: 0}
+    materials: []
+  petVfx: {fileID: 0}
+  playVfx: {fileID: 0}
+  feedVfx: {fileID: 0}
+  celebrationVfx: {fileID: 0}
+  petSfx: {fileID: 8300000, guid: b9a05c2a4d984844a904a3f876682297, type: 3}
+  playSfx: {fileID: 8300000, guid: b9a05c2a4d984844a904a3f876682297, type: 3}
+  feedSfx: {fileID: 8300000, guid: b9a05c2a4d984844a904a3f876682297, type: 3}
+  celebrationSfx: {fileID: 8300000, guid: 1f8bded5aa789e14291cf63e07221b72, type: 3}
+  isMythical: 0
+  rarityTag: standard
+  isIntroductory: 0
