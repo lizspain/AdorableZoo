@@ -2,7 +2,7 @@
 
 ## Current Status (as of 2026-08-24)
 
-Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals are in, wired, and tested working (Unicorn/Whale/Mermaid all confirmed live in Play mode); Settings/Unlock/Reset Zoo tested working too. **Phase 11 (UX Refinement Pass) is underway** — Toy Attachment Points tooling built and tuned for the 10 starter animals (remaining ~67 animals still TODO, see note below); **Camera Rig refinement is next up.**
+Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals are in, wired, and tested working (Unicorn/Whale/Mermaid all confirmed live in Play mode); Settings/Unlock/Reset Zoo tested working too. **Phase 11 (UX Refinement Pass) is underway** — Toy Attachment Points tooling built and tuned for the 10 starter animals (remaining ~67 animals still TODO), Camera Rig refinement tested and confirmed working. **Tableau Refinement jumped ahead of Interaction/animation timing** (it was blocking evaluation with a non-reading 5-year-old) — code-complete, not yet tested live.
 
 | Phase | Status |
 |---|---|
@@ -17,7 +17,7 @@ Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals ar
 | 8 — Save System | ✅ Done |
 | 9 — Performance Pass | 🟡 Partial, pinned -- off-camera LOD/VFX pooling/bake timing done in code; GPU-instancing menu tool built but not confirmed run; texture atlasing and device profiling still need your hands-on Editor/device time |
 | 10 — Vertical Slice Content | 🟡 Mostly done -- full regular roster generated and registered, all 3 mythicals (Unicorn/Whale/Mermaid) built, wired, and tested working; `MythicStandin` removed; 35/77 animals have SFX applied (41 have no defensible sound match, see Audio Content Pass below). Free tier decided and *enforced* -- see Settings/Unlock/Reset Zoo below. Open: attachmentPoint/toyAppearance unset on nearly every non-Cat animal |
-| 11 — UX Refinement Pass *(redefined, was QA)* | 🟡 In progress -- Toy Attachment Points tooling built and tuned for the 10 starter animals (remaining ~67 TODO); Camera Rig refinement next |
+| 11 — UX Refinement Pass *(redefined, was QA)* | 🟡 In progress -- Toy Attachment Points tooling built and tuned for the 10 starter animals (remaining ~67 TODO); Camera Rig refinement tested and confirmed working; Tableau refinement code-complete, not yet tested; Interaction/Animation timing still pending |
 | 12 — QA & Testing Pass *(was Phase 11)* | 🟡 Partial — Edit Mode tests exist for `ZooEconomyConfig`, `GridPlacementPlanner`, `OfferGenerator`, `SaveSystem`; no Play Mode tests yet, no moderated playtesting yet |
 
 ## Context
@@ -201,7 +201,7 @@ Applied SFX from `Assets/cplomedia/Animals` to 35 of the 77 `AnimalDefinition` a
 
 ## Phase 11 — UX Refinement Pass 🟡 *(redefined 2026-08-24 -- was "QA & Testing Pass"; that work moved to Phase 12 below, not dropped)*
 
-Six refinement passes, tackled roughly in this order:
+Seven refinement passes, tackled roughly in this order:
 
 1. **Toy Attachment Points** 🟡 *(in progress)*
    - `Rainbow Zoo > Content > Assign Toy Attachment Points` (`AttachmentPointAssigner.cs`) — auto-detects a carry bone per species (mouth/jaw/muzzle/snout/beak first, falling back to head) across all 77 `AnimalDefinition`s and sets `AttachmentPoint`. Idempotent; run and confirmed working. Spot-checked against Owl/Monkey/Crocodile/Turtle rigs before shipping -- `Head` held up as a reliable fallback across bird/primate/reptile/mammal rigs.
@@ -210,15 +210,22 @@ Six refinement passes, tackled roughly in this order:
    - **Fixed:** the preview toy was rendering at ~1m instead of the real 0.3m -- several rigs bake a non-unit scale into the model wrapper (e.g. Deer's is 6x) that every bone inherits, and the tool wasn't compensating for it the way `ChaseSequence`'s own `SetParent(parent, true)` does. Fixed by setting the toy's world-space size before parenting, then reparenting with `worldPositionStays: true` so Unity auto-compensates per-bone, matching runtime behavior exactly.
    - **Done:** offsets manually tuned via the preview tool for the 10 starter/free-tier animals (confirmed working).
    - **TODO, later in this phase:** manually set `ToyAttachmentOffset`/`RotationOffset` on the remaining ~67 non-starter animals using the same preview tool. Not urgent (the auto-assigned bone is a reasonable default even unrefined), but left for a pass once the rest of Phase 11 is further along.
-2. **Camera Rig refinement** 🟡 *(current step)* — feedback: "feels too far zoomed out, difficult to see interactions and animations." Addressed:
+2. **Camera Rig refinement** ✅ *(tested and confirmed working)* — feedback: "feels too far zoomed out, difficult to see interactions and animations." Addressed:
    - `paddingWorldUnits` 1.5 -> 0.75 (tighter auto-fit framing around placed content).
    - New `pitchDegrees` field (default 58, was an unconfigurable ~32 deg baked into the placeholder Main Camera rotation) -- steeper, more square-on view of habitats, short of a full 90 deg overhead. Applied in `CameraRig.Awake()` now, not just whatever the scene's Camera Transform happened to have; the class's "never touches rotation" design note no longer holds and its doc comment was updated to match.
    - **New: gentle interaction-focus zoom.** `CameraRig.FocusOnHabitat(worldCenter)` temporarily overrides the auto-fit look-at/distance for `interactionFocusHoldSeconds` (default 2s), riding the exact same `Update()` lerp as normal framing so the zoom in and back out are both "gentle" for free -- no separate tween code. Clamped to never zoom further *out* than the current auto-fit distance (`Mathf.Min`), so it's purely a zoom-in aid. `InputRouter.EndGesture` calls it right when Pet/Feed/Play actually registers (not on a tap `TryPet`/`TryFeed` rejects, e.g. still on cooldown).
-   - **Tested:** angle/padding confirmed feeling right. Focus zoom was too aggressive on first pass -- too far in, too fast both directions. Tuned: `interactionFocusDistance` 5 -> 7 (less zoomed in), hold 2s -> 3s, and split the single shared `easeSpeed` into dedicated `interactionFocusEaseInSpeed` (1.2, was implicitly 3 via the shared field) / `interactionFocusEaseOutSpeed` (0.8) / `interactionFocusEaseOutDurationSeconds` (2.5s of slow easing after the hold ends before handing back off to the normal `easeSpeed`) -- keeping these separate from `easeSpeed` means tuning the focus zoom's feel can never accidentally change normal auto-fit reframing speed. Not yet re-tested with the new values.
-3. **Interaction response & animation timing refinement** ⬜ — Pet/Play/Feed/Jump timing values across `AnimalController`/`ZooEconomyConfig`.
+   - **Tested and confirmed working**, including the re-tuned zoom values. Angle, padding, and the interaction focus zoom (distance/hold/ease-in/ease-out all split into their own tunable fields) all read correctly now. User plans to keep hand-tuning the zoom parameters further later -- current values are a good initial baseline, not final.
+3. **Interaction response & animation timing refinement** 🟡 *(current step)* — Pet/Play/Feed/Jump timing values across `AnimalController`/`ZooEconomyConfig`. Waiting on specific feedback (asked what feels off -- too slow/too snappy/cooldowns/etc -- not yet answered).
 4. **Sound refinement** ⬜ — beyond the Phase 10 audio content pass (35/77 animals covered); revisit the family-substitution choices, the still-silent 41, and general mix/ducking feel.
 5. **VFX refinement** ⬜ — real celebration/heart-gain VFX to replace `DebugInteractionVfx`'s placeholder bursts (still explicitly a stand-in, not yet touched since Phase 9's pooling pass).
-6. **UI pass** ⬜ — visual polish across the Offer Tableau, Settings menu, Zoo Navigation Bars, etc. now that they're all functionally wired.
+6. **Tableau refinement** 🟡 *(moved ahead of Interaction/animation timing -- blocking evaluation with a non-reading 5-year-old)* — replace the Offer Tableau's plain text slots with each candidate's actual animated 3D model: Idle looping while shown, Jump/celebrate on selection before the tableau disappears.
+   - **Implemented:** `OfferTableauController` rewritten -- each slot gets its own runtime-created preview `Camera` (culled to a new `TableauPreview` layer) rendering a pedestal-instantiated, non-interactive copy of the candidate's `AnimalPrefab` (all `MonoBehaviour`s + `NavMeshAgent` disabled, so nothing moves or paths) into a `RenderTexture` bound to that slot's `ui:Image` (`OfferTableau.uxml`/`.uss` updated to nest an `Image` inside each slot `Button`). Idle plays automatically -- it's every species' Animator default state already, no code needed. Selecting a slot fires `Animator.SetTrigger("jump")` on that slot's preview (the same parameter `ControllerPetZoo` itself uses), waits `CelebrateSecondsBeforePlacing` (0.8s), then hides the tableau and places the animal as before. Camera framing per pedestal is bounds-driven (`Renderer.bounds`, same technique as the toy-attachment/mythical-prefab tools), not a fixed distance, since species sizes vary hugely (Mermaid vs. Whale).
+   - **New layer:** `TableauPreview` added at slot 8 in `ProjectSettings/TagManager.asset` (hand-edited -- layer creation isn't otherwise scriptable outside the Editor); Main Camera's `m_CullingMask` in the scene updated to exclude it so pedestal previews never leak into the normal zoo view. Confirmed the scene's Directional Light culling mask is unrestricted (`Everything`), so the pedestals should still be lit normally.
+   - **Tested -- animations and sizing read well, URP rendering worked fine without needing `UniversalAdditionalCameraData` after all.** Two fixes from that first pass:
+     - Camera was framing every animal's *back*, exactly 180 degrees off -- these rigs face -Z, not +Z as assumed. Fixed by flipping the eye position to the +Z side.
+     - Animals read a bit small -- tightened the fit margin from 1.15x to 1.05x (still a small buffer for the Idle loop's own motion, since bounds are only sampled once at spawn time, not re-measured every frame).
+   - Not yet re-tested with these two fixes.
+7. **UI pass** ⬜ — visual polish across the Offer Tableau, Settings menu, Zoo Navigation Bars, etc. now that they're all functionally wired.
 
 **Current state:** Toy Attachment Points tooling done (10/77 animals tuned); Camera Rig refinement code-complete, awaiting Play-mode confirmation.
 

@@ -34,3 +34,17 @@
     border-color: var(--color-lilac-birch);
     background-color: var(--color-gold-birch-light);
 }
+
+/* Fills the slot with the live 3D preview render texture (OfferTableauController) -- the
+   button's own rounded corners/border still show around it since this sits slightly inset. */
+.offer-slot-image {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    right: 4px;
+    bottom: 4px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
