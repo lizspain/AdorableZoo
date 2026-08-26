@@ -2,7 +2,7 @@
 
 ## Current Status (as of 2026-08-24)
 
-Phases 0–8 are implemented. **Phase 9 (Performance Pass) is next.**
+Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals are in, wired, and tested working (Unicorn/Whale/Mermaid all confirmed live in Play mode). **No phase is "next up" by default right now** -- see the open items below for what's actually left.
 
 | Phase | Status |
 |---|---|
@@ -15,8 +15,8 @@ Phases 0–8 are implemented. **Phase 9 (Performance Pass) is next.**
 | 6 — Camera Rig | ✅ Done |
 | 7 — Audio Layer | ✅ Done |
 | 8 — Save System | ✅ Done |
-| 9 — Performance Pass | 🟡 Partial — see notes below for what still needs your hands-on Editor/device work |
-| 10 — Vertical Slice Content | 🟡 Partial — tool built to generate the full regular Cute Zoo 1–4 roster (needs to be run in-Editor); 3 new mythical creatures imported (Mermaid, Whale, Unicorn) but blocked on Animator Controller work -- see notes below |
+| 9 — Performance Pass | 🟡 Partial, pinned -- off-camera LOD/VFX pooling/bake timing done in code; GPU-instancing menu tool built but not confirmed run; texture atlasing and device profiling still need your hands-on Editor/device time |
+| 10 — Vertical Slice Content | 🟡 Mostly done -- full regular roster generated and registered, all 3 mythicals (Unicorn/Whale/Mermaid) built, wired, and tested working; `MythicStandin` removed; 35/77 animals have SFX applied (41 have no defensible sound match, see Audio Content Pass below). Free tier decided and *enforced* -- see Settings/Unlock/Reset Zoo below. Open: attachmentPoint/toyAppearance unset on nearly every non-Cat animal |
 | 11 — QA & Testing Pass | 🟡 Partial — Edit Mode tests exist for `ZooEconomyConfig`, `GridPlacementPlanner`, `OfferGenerator`, `SaveSystem`; no Play Mode tests yet, no moderated playtesting yet |
 
 ## Context
@@ -222,10 +222,22 @@ Added 2026-08-24, during Phase 10 roster work. Not present in the original desig
 
 - **Free tier:** 10 animals total — 9 regular + 1 mythic.
 - **Paid tier:** a single nominal one-time fee unlocks the full roster (not per-animal purchases, not a subscription).
-- `AnimalDefinition` now has an `isIntroductory` bool (`Assets/_Game/Scripts/Core/AnimalDefinition.cs`) marking which animals are in the free set. **This is currently just a data flag** — nothing reads it yet. `OfferGenerator`'s pool selection doesn't check it, and there's no purchase-state tracking (IAP receipt, PlayerPrefs flag, etc.) anywhere in the project. Wiring actual gating (only offering `isIntroductory` animals until purchase, plus the IAP flow itself) is separate, later work.
-- **Nobody has picked which specific 9 regular animals + 1 mythic make up the free set yet** — every generated `AnimalDefinition` currently defaults to `isIntroductory = false`. Decide and check the box per-asset in the Inspector (the 6 originally curated placeholders -- Cat, Zebra, Ostrich, Tiger, Possum, Elephant -- are a reasonable starting point for 6 of the 9, but that's a product call, not something to default silently).
+- `AnimalDefinition.IsIntroductory` marks which animals are in the free set. **As of 2026-08-24 this is enforced, not just data** — see "Settings, Unlock & Reset Zoo" below.
+- **Free set as currently marked** (11 animals — one over the "9+1" target, not yet trimmed): BearA, Lion, MonkeyA, Raccoon, Turtle, Cat ("White"), Elephant, Ostrich, Tiger ("Orange"), Zebra (10 regular) + Whale (1 mythic). Marked directly in the Inspector by the user, not picked by an automated default.
+
+## Settings, Unlock & Reset Zoo (added 2026-08-24)
+
+A corner Settings gate, gated behind a **4-second press-and-hold** (not the original design doc's two-stage hold-then-tap gesture — simplified to a single hold per current direction) opens a small menu with two actions:
+
+- **`Assets/_Game/UI/UXML/SettingsUI.uxml` + `.uss`, `Assets/_Game/Scripts/UI/SettingsUIController.cs`** — the corner icon (deliberately small/low-opacity, "tucked outside the primary play area" per the doc), a fill bar that grows over the 4s hold for visible progress feedback, and the menu itself. Wired into the scene as a new `SettingsUI` GameObject (UIDocument, sorting order 1 so it draws above the tableau/nav bars).
+- **Unlock All Animals** → `ZooManager.UnlockFullRoster()`. Sets a persisted `hasFullUnlock` flag and saves. **This is not a real purchase** — there is no payment processing anywhere in this code. Real IAP (Unity IAP package + App Store Connect/Google Play Console product configuration) needs your own developer/store accounts and is separate work I can't complete for you.
+- **Reset Zoo** → its own "are you sure?" confirmation sub-panel first (irreversible data loss, so this stays regardless of the simplified outer gate), then `ZooManager.ResetZoo()`: deletes the save (`SaveSystem.DeleteSave()`, new method) and reloads the scene by name, which cleanly resets every runtime system to a fresh empty zoo.
+- **Gating now has teeth:** `OfferGenerator.GenerateOffer` takes a `fullUnlockActive` parameter (default `true`, so old call sites/tests are unaffected) — when `false`, the candidate pool is filtered to `IsIntroductory` animals only, for both the standard and mythical rolls. `ZooManager` passes its persisted `hasFullUnlock` in on every tableau request.
+- `SaveSystem.SaveData` gained `hasFullUnlock`; `SaveSystem.Save` takes it as a required third parameter now (existing call sites updated).
+- New tests: `SaveSystemTests.DeleteSave_RemovesBothPrimaryAndBackup_SoLoadReturnsNullAfterward`, `OfferGeneratorTests.GenerateOffer_WhenLocked_OnlyOffersIntroductoryAnimals` / `_WhenUnlocked_CanOfferNonIntroductoryAnimals`.
+- **Not yet tested in a live Play session** — built and internally consistent (scene YAML hand-verified, no fileID collisions), but nobody has pressed Play and actually held the corner icon for 4 seconds yet.
 
 ## Explicitly Out of Scope for This Plan
 
-- **Settings screen & Parental Gate (incl. Reset Zoo):** deferred to a separate follow-up plan as its own UI module, after this vertical slice is implemented.
+- **Real IAP/payment processing:** the Unlock All Animals button flips a local flag only. Wiring an actual store transaction needs your own App Store/Google Play developer accounts and product configuration — not something completable without you.
 - **Real mythical-creature assets:** unicorn/mermaid/dragon stay as placeholder stubs throughout this plan (Phases 1–11); sourcing/modeling/rigging the real models is a later, separate effort once the vertical slice is playable. **Update:** real Unicorn/Whale/Mermaid assets have since been imported (Phase 10), but wiring them in is blocked on Animator Controller work -- see Phase 10 notes above.

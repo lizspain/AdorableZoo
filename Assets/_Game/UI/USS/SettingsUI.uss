@@ -1,0 +1,92 @@
+.settings-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Deliberately small and low-opacity ("a single small icon tucked outside the primary play
+   area", design doc section 12) -- this is a parent-facing control, not something meant to draw
+   a child's attention or tempt an idle tap. */
+.settings-gate {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    background-color: var(--color-birch-base);
+    border-width: 2px;
+    border-color: var(--color-gold-birch);
+    opacity: 0.5;
+    overflow: hidden;
+}
+
+/* Bottom-anchored fill that grows over the 4-second hold, so a parent gets visible progress
+   feedback rather than wondering whether the press registered at all. */
+.settings-gate-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0%;
+    background-color: var(--color-gold-birch);
+}
+
+.settings-panel {
+    position: absolute;
+    top: 60px;
+    right: 16px;
+    width: 240px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    background-color: var(--color-birch-base);
+    border-width: 3px;
+    border-color: var(--color-gold-birch);
+    align-items: stretch;
+}
+
+.settings-panel-title {
+    color: var(--color-ink);
+    font-size: 16px;
+    -unity-text-align: middle-center;
+    margin-bottom: 12px;
+}
+
+.settings-panel-title--wrap {
+    white-space: normal;
+}
+
+.settings-button {
+    margin-bottom: 8px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    background-color: var(--color-cobalt-birch);
+    color: white;
+    border-width: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.settings-button--danger {
+    background-color: var(--color-rose-birch);
+}
+
+.settings-button--secondary {
+    background-color: var(--color-birch-base);
+    color: var(--color-ink);
+    border-width: 2px;
+    border-color: var(--color-gold-birch);
+}

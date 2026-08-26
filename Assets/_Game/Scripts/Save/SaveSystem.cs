@@ -30,6 +30,7 @@ namespace RainbowZoo.Save
             public ZooLayoutState layout = new ZooLayoutState();
             public int currentHearts;
             public int currentThreshold;
+            public bool hasFullUnlock;
         }
 
         /// <summary>
@@ -39,13 +40,14 @@ namespace RainbowZoo.Save
         /// was fully committed before this write), and only then does the temp file atomically
         /// replace the main save.
         /// </summary>
-        public static void Save(ZooLayoutState layout, ZooCareMeterState careMeter)
+        public static void Save(ZooLayoutState layout, ZooCareMeterState careMeter, bool hasFullUnlock)
         {
             var data = new SaveData
             {
                 layout = layout,
                 currentHearts = careMeter.currentHearts,
-                currentThreshold = careMeter.currentThreshold
+                currentThreshold = careMeter.currentThreshold,
+                hasFullUnlock = hasFullUnlock
             };
             string json = JsonUtility.ToJson(data, prettyPrint: true);
 
@@ -81,6 +83,13 @@ namespace RainbowZoo.Save
             if (data != null) return data;
 
             return null;
+        }
+
+        /// <summary>Deletes both the primary save and its backup -- Reset Zoo (design doc section 12). Irreversible; the caller is responsible for confirming with the player first.</summary>
+        public static void DeleteSave()
+        {
+            if (File.Exists(SavePath)) File.Delete(SavePath);
+            if (File.Exists(BackupPath)) File.Delete(BackupPath);
         }
 
         private static SaveData TryLoad(string path)

@@ -70,10 +70,11 @@ namespace RainbowZoo.Core
         public bool IsIntroductory => isIntroductory;
 
         /// <summary>Test-only construction hook (Game.Core.Tests only, via InternalsVisibleTo) -- AnimalDefinition assets are otherwise authored exclusively through the Inspector.</summary>
-        internal void ConfigureForTests(string id, bool isMythical)
+        internal void ConfigureForTests(string id, bool isMythical, bool isIntroductory = false)
         {
             this.id = id;
             this.isMythical = isMythical;
+            this.isIntroductory = isIntroductory;
         }
     }
 

@@ -53,12 +53,13 @@ namespace RainbowZoo.Tests
             var layout = BuildLayout("cat", "zebra", "tiger");
             var careMeter = BuildCareMeter(hearts: 7, threshold: 16);
 
-            SaveSystem.Save(layout, careMeter);
+            SaveSystem.Save(layout, careMeter, hasFullUnlock: true);
             var loaded = SaveSystem.Load();
 
             Assert.IsNotNull(loaded);
             Assert.AreEqual(7, loaded.currentHearts);
             Assert.AreEqual(16, loaded.currentThreshold);
+            Assert.IsTrue(loaded.hasFullUnlock);
             Assert.AreEqual(3, loaded.layout.placedAnimals.Count);
             Assert.AreEqual("cat", loaded.layout.placedAnimals[0].animalDefinitionId);
             Assert.AreEqual("zebra", loaded.layout.placedAnimals[1].animalDefinitionId);
@@ -78,12 +79,12 @@ namespace RainbowZoo.Tests
         {
             var firstLayout = BuildLayout("cat");
             var firstCareMeter = BuildCareMeter(hearts: 3, threshold: 10);
-            SaveSystem.Save(firstLayout, firstCareMeter);
+            SaveSystem.Save(firstLayout, firstCareMeter, hasFullUnlock: false);
 
             // A second save promotes the first save into the backup slot.
             var secondLayout = BuildLayout("cat", "zebra");
             var secondCareMeter = BuildCareMeter(hearts: 9, threshold: 12);
-            SaveSystem.Save(secondLayout, secondCareMeter);
+            SaveSystem.Save(secondLayout, secondCareMeter, hasFullUnlock: false);
 
             // Simulate an interrupted/corrupted write landing in the primary save file.
             File.WriteAllText(Path.Combine(testDirectory, "zoo_save.json"), "{ not valid json");
@@ -102,6 +103,19 @@ namespace RainbowZoo.Tests
             File.WriteAllText(Path.Combine(testDirectory, "zoo_save.json"), "{ not valid json");
 
             Assert.IsNull(SaveSystem.Load());
+        }
+
+        [Test]
+        public void DeleteSave_RemovesBothPrimaryAndBackup_SoLoadReturnsNullAfterward()
+        {
+            SaveSystem.Save(BuildLayout("cat"), BuildCareMeter(3, 10), hasFullUnlock: false);
+            SaveSystem.Save(BuildLayout("cat", "zebra"), BuildCareMeter(9, 12), hasFullUnlock: false);
+
+            SaveSystem.DeleteSave();
+
+            Assert.IsNull(SaveSystem.Load());
+            Assert.IsFalse(File.Exists(Path.Combine(testDirectory, "zoo_save.json")));
+            Assert.IsFalse(File.Exists(Path.Combine(testDirectory, "zoo_save.backup.json")));
         }
     }
 }

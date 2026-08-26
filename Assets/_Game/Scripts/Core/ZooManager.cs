@@ -4,6 +4,7 @@ using RainbowZoo.Animals;
 using RainbowZoo.Save;
 using Unity.AI.Navigation;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace RainbowZoo.Core
 {
@@ -32,9 +33,13 @@ namespace RainbowZoo.Core
         private OfferGenerator offerGenerator;
         private int debugPoolCursor;
         private bool isRestoringFromSave;
+        private bool hasFullUnlock;
 
         public ZooLayoutState LayoutState => layoutState;
         public ZooCareMeterState CareMeterState => careMeterState;
+
+        /// <summary>Monetization model: 9 regular + 1 mythic animal free, the rest behind a one-time full-roster unlock (AnimalDefinition.IsIntroductory marks the free set). Gates OfferGenerator's candidate pool.</summary>
+        public bool HasFullUnlock => hasFullUnlock;
 
         /// <summary>Raised whenever a new 3-slot offer is ready to display (Offer Tableau UI, section 3).</summary>
         public event Action<OfferTableau> OnTableauReady;
@@ -114,6 +119,7 @@ namespace RainbowZoo.Core
 
             careMeterState.currentHearts = save.currentHearts;
             careMeterState.currentThreshold = save.currentThreshold;
+            hasFullUnlock = save.hasFullUnlock;
         }
 
         private void OnApplicationPause(bool pauseStatus)
@@ -124,7 +130,35 @@ namespace RainbowZoo.Core
         private void SaveNow()
         {
             if (isRestoringFromSave) return;
-            SaveSystem.Save(layoutState, careMeterState);
+            SaveSystem.Save(layoutState, careMeterState, hasFullUnlock);
+        }
+
+        /// <summary>
+        /// Flips the local full-unlock flag and saves. This is NOT a real purchase -- there is no
+        /// payment processing here. Wiring this to an actual store transaction (Unity IAP plus App
+        /// Store/Google Play product configuration, which needs the developer's own store
+        /// accounts) is separate work this method deliberately does not attempt.
+        /// </summary>
+        public void UnlockFullRoster()
+        {
+            if (hasFullUnlock) return;
+            hasFullUnlock = true;
+            SaveNow();
+        }
+
+        /// <summary>
+        /// Reset Zoo (design doc section 12/14): deletes the save (primary + backup) and reloads
+        /// the scene, which cleanly resets every runtime system -- Care Meter, layout, placed
+        /// habitats, camera framing -- to a fresh empty zoo. Simpler and more robust than manually
+        /// tearing down each subsystem by hand. Irreversible; the caller (SettingsUIController) is
+        /// responsible for confirming with the player first.
+        /// </summary>
+        public void ResetZoo()
+        {
+            SaveSystem.DeleteSave();
+            // By name, not buildIndex -- reloads correctly in the Editor even if the scene hasn't
+            // been added to Build Settings yet, which buildIndex (-1 when unregistered) would not.
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         private void Update()
@@ -269,7 +303,7 @@ namespace RainbowZoo.Core
         private void RequestNextTableau()
         {
             if (offerGenerator == null) return;
-            CurrentTableau = offerGenerator.GenerateOffer(layoutState);
+            CurrentTableau = offerGenerator.GenerateOffer(layoutState, fullUnlockActive: hasFullUnlock);
             OnTableauReady?.Invoke(CurrentTableau);
         }
 
