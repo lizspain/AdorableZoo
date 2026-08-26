@@ -166,6 +166,7 @@ namespace RainbowZoo.Core
                 var dragDelta = lastDragPoint - holdStartPoint;
                 var throwVelocity = dragDelta * dragThrowForceMultiplier + Vector3.up * throwUpwardBoost;
                 pressedHabitat.Toy?.Release(Vector3.ClampMagnitude(throwVelocity, maxThrowSpeed));
+                FocusCameraOnPressedHabitat();
             }
             else if (pressedFoodDishHabitat != null)
             {
@@ -173,16 +174,29 @@ namespace RainbowZoo.Core
                 // dish or the animal's body (see TryPromoteToPlayHold), so any release reaching
                 // here from one of those presses should resolve as Feed/Pet regardless of how
                 // long it was held or how far it drifted while still over the target.
-                pressedFoodDishHabitat.Animal?.TryFeed();
+                if (pressedFoodDishHabitat.Animal != null && pressedFoodDishHabitat.Animal.TryFeed())
+                {
+                    FocusCameraOnPressedHabitat();
+                }
             }
             else if (pressedAnimal != null)
             {
-                pressedAnimal.TryPet();
+                if (pressedAnimal.TryPet())
+                {
+                    FocusCameraOnPressedHabitat();
+                }
             }
 
             pressedAnimal = null;
             pressedHabitat = null;
             pressedFoodDishHabitat = null;
+        }
+
+        /// <summary>Gentle camera zoom toward whichever habitat this gesture landed on (design: "zoom in on an animal habitat when an interaction is clicked or tapped"), only fired once the interaction actually registers -- never on a tap that TryPet/TryFeed rejected (e.g. still on cooldown).</summary>
+        private void FocusCameraOnPressedHabitat()
+        {
+            if (pressedHabitat == null) return;
+            CameraRig.Instance?.FocusOnHabitat(pressedHabitat.transform.position);
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals ar
 | 8 — Save System | ✅ Done |
 | 9 — Performance Pass | 🟡 Partial, pinned -- off-camera LOD/VFX pooling/bake timing done in code; GPU-instancing menu tool built but not confirmed run; texture atlasing and device profiling still need your hands-on Editor/device time |
 | 10 — Vertical Slice Content | 🟡 Mostly done -- full regular roster generated and registered, all 3 mythicals (Unicorn/Whale/Mermaid) built, wired, and tested working; `MythicStandin` removed; 35/77 animals have SFX applied (41 have no defensible sound match, see Audio Content Pass below). Free tier decided and *enforced* -- see Settings/Unlock/Reset Zoo below. Open: attachmentPoint/toyAppearance unset on nearly every non-Cat animal |
-| 11 — UX Refinement Pass *(redefined, was QA)* | ⬜ Not started -- next up: Toy Attachment Points, then Camera Rig, Interaction/Animation timing, Sound, VFX, UI passes |
+| 11 — UX Refinement Pass *(redefined, was QA)* | 🟡 In progress -- Toy Attachment Points tooling built and tuned for the 10 starter animals (remaining ~67 TODO); Camera Rig refinement next |
 | 12 — QA & Testing Pass *(was Phase 11)* | 🟡 Partial — Edit Mode tests exist for `ZooEconomyConfig`, `GridPlacementPlanner`, `OfferGenerator`, `SaveSystem`; no Play Mode tests yet, no moderated playtesting yet |
 
 ## Context
@@ -210,13 +210,17 @@ Six refinement passes, tackled roughly in this order:
    - **Fixed:** the preview toy was rendering at ~1m instead of the real 0.3m -- several rigs bake a non-unit scale into the model wrapper (e.g. Deer's is 6x) that every bone inherits, and the tool wasn't compensating for it the way `ChaseSequence`'s own `SetParent(parent, true)` does. Fixed by setting the toy's world-space size before parenting, then reparenting with `worldPositionStays: true` so Unity auto-compensates per-bone, matching runtime behavior exactly.
    - **Done:** offsets manually tuned via the preview tool for the 10 starter/free-tier animals (confirmed working).
    - **TODO, later in this phase:** manually set `ToyAttachmentOffset`/`RotationOffset` on the remaining ~67 non-starter animals using the same preview tool. Not urgent (the auto-assigned bone is a reasonable default even unrefined), but left for a pass once the rest of Phase 11 is further along.
-2. **Camera Rig refinement** 🟡 *(current step)* — framing/zoom/pan tuning beyond Phase 6's initial pass.
+2. **Camera Rig refinement** 🟡 *(current step)* — feedback: "feels too far zoomed out, difficult to see interactions and animations." Addressed:
+   - `paddingWorldUnits` 1.5 -> 0.75 (tighter auto-fit framing around placed content).
+   - New `pitchDegrees` field (default 58, was an unconfigurable ~32 deg baked into the placeholder Main Camera rotation) -- steeper, more square-on view of habitats, short of a full 90 deg overhead. Applied in `CameraRig.Awake()` now, not just whatever the scene's Camera Transform happened to have; the class's "never touches rotation" design note no longer holds and its doc comment was updated to match.
+   - **New: gentle interaction-focus zoom.** `CameraRig.FocusOnHabitat(worldCenter)` temporarily overrides the auto-fit look-at/distance for `interactionFocusHoldSeconds` (default 2s), riding the exact same `Update()` lerp as normal framing so the zoom in and back out are both "gentle" for free -- no separate tween code. Clamped to never zoom further *out* than the current auto-fit distance (`Mathf.Min`), so it's purely a zoom-in aid. `InputRouter.EndGesture` calls it right when Pet/Feed/Play actually registers (not on a tap `TryPet`/`TryFeed` rejects, e.g. still on cooldown).
+   - **Tested:** angle/padding confirmed feeling right. Focus zoom was too aggressive on first pass -- too far in, too fast both directions. Tuned: `interactionFocusDistance` 5 -> 7 (less zoomed in), hold 2s -> 3s, and split the single shared `easeSpeed` into dedicated `interactionFocusEaseInSpeed` (1.2, was implicitly 3 via the shared field) / `interactionFocusEaseOutSpeed` (0.8) / `interactionFocusEaseOutDurationSeconds` (2.5s of slow easing after the hold ends before handing back off to the normal `easeSpeed`) -- keeping these separate from `easeSpeed` means tuning the focus zoom's feel can never accidentally change normal auto-fit reframing speed. Not yet re-tested with the new values.
 3. **Interaction response & animation timing refinement** ⬜ — Pet/Play/Feed/Jump timing values across `AnimalController`/`ZooEconomyConfig`.
 4. **Sound refinement** ⬜ — beyond the Phase 10 audio content pass (35/77 animals covered); revisit the family-substitution choices, the still-silent 41, and general mix/ducking feel.
 5. **VFX refinement** ⬜ — real celebration/heart-gain VFX to replace `DebugInteractionVfx`'s placeholder bursts (still explicitly a stand-in, not yet touched since Phase 9's pooling pass).
 6. **UI pass** ⬜ — visual polish across the Offer Tableau, Settings menu, Zoo Navigation Bars, etc. now that they're all functionally wired.
 
-**Current state:** not started. Attachment Points is next up.
+**Current state:** Toy Attachment Points tooling done (10/77 animals tuned); Camera Rig refinement code-complete, awaiting Play-mode confirmation.
 
 ## Phase 12 — QA & Testing Pass 🟡 *(was Phase 11)*
 

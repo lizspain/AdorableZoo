@@ -9,11 +9,12 @@ namespace RainbowZoo.Core
     /// instead allows bounded panning (Zoo Navigation Bars / World Pan Bars, section 14), clamped
     /// so its view never shows past the outer edge of the farthest-placed habitat in any direction.
     ///
-    /// Never touches rotation -- "fixed angle" is whatever the camera's Transform is set to when
-    /// this starts (the placeholder angle set manually before this phase), captured once and kept.
-    /// Pan directions are plain world +/-X and +/-Z, which only lines up with screen left/right/
-    /// up/down because the fixed angle has zero yaw (pure X-axis tilt) -- if that ever changes,
-    /// these would need to become camera-relative instead of world-axis-aligned.
+    /// Pitch is a tunable field (pitchDegrees) applied once in Awake, overriding whatever rotation
+    /// is set on the Camera's Transform in the Editor -- Phase 11 UX refinement moved this off the
+    /// placeholder manually-set angle from earlier phases so it's tunable like everything else
+    /// here. Pan directions are plain world +/-X and +/-Z, which only lines up with screen
+    /// left/right/up/down because the fixed angle has zero yaw (pure X-axis tilt) -- if that ever
+    /// changes, these would need to become camera-relative instead of world-axis-aligned.
     ///
     /// Framing math is a flat-plane approximation (world X/Z bounds mapped directly onto
     /// horizontal/vertical FOV), not an exact tilted-frustum-vs-ground-plane solve -- reasonable
@@ -26,11 +27,13 @@ namespace RainbowZoo.Core
 
         [Header("Framing (placeholder values -- tune freely, no code changes needed)")]
         [Tooltip("Extra world-space margin kept around the fitted content on every side.")]
-        [SerializeField] private float paddingWorldUnits = 1.5f;
+        [SerializeField] private float paddingWorldUnits = 0.75f;
         [Tooltip("Closest the camera will dolly in, even for a single habitat.")]
         [SerializeField] private float minDistance = 4f;
         [Tooltip("How quickly the camera eases toward a new distance/look-at target.")]
         [SerializeField] private float easeSpeed = 3f;
+        [Tooltip("Downward pitch in degrees from horizontal (0 = looking straight ahead, 90 = straight down). Applied once in Awake -- steeper than the original ~32 deg placeholder so habitats read more square-on, short of a full overhead view.")]
+        [SerializeField] private float pitchDegrees = 58f;
 
         [Header("Grid Ceiling (design doc: 5 columns x 3 rows)")]
         [SerializeField] private int ceilingColumns = 5;
@@ -42,11 +45,27 @@ namespace RainbowZoo.Core
         [Tooltip("How close to a pan bound counts as 'already there' for hiding that direction's bar.")]
         [SerializeField] private float panEpsilon = 0.05f;
 
+        [Header("Interaction Focus (gentle zoom toward a habitat on Pet/Feed/Play)")]
+        [Tooltip("Distance to dolly in to when focusing -- never zooms further OUT than the current auto-fit distance, only in, so this only matters once the zoo has grown enough that auto-fit is already farther away than this.")]
+        [SerializeField] private float interactionFocusDistance = 7f;
+        [Tooltip("How long the focused view holds before easing back to normal auto-fit framing.")]
+        [SerializeField] private float interactionFocusHoldSeconds = 3f;
+        [Tooltip("Ease speed while zooming IN to the focus target -- deliberately separate from the general easeSpeed above so tuning this never affects normal auto-fit reframing.")]
+        [SerializeField] private float interactionFocusEaseInSpeed = 1.2f;
+        [Tooltip("Ease speed while zooming back OUT to normal framing after the hold ends.")]
+        [SerializeField] private float interactionFocusEaseOutSpeed = 0.8f;
+        [Tooltip("How long after the hold ends to keep using the slower ease-out speed, before handing back off to the general easeSpeed for any incidental fine-tuning.")]
+        [SerializeField] private float interactionFocusEaseOutDurationSeconds = 2.5f;
+
         private Camera cam;
         private Vector3 fixedForward;
         private float ceilingDistance;
         private float currentDistance;
         private Vector3 lookAtTarget;
+        private bool isFocusing;
+        private float focusTimeRemaining;
+        private Vector3 focusLookAtTarget;
+        private float easingOutTimeRemaining;
 
         /// <summary>True once content has grown past the 5x3 ceiling and the camera is holding distance -- the only state panning is meaningful in.</summary>
         public bool IsAtCeiling { get; private set; }
@@ -60,6 +79,8 @@ namespace RainbowZoo.Core
         {
             Instance = this;
             cam = GetComponent<Camera>();
+
+            transform.rotation = Quaternion.Euler(pitchDegrees, 0f, 0f);
             fixedForward = transform.forward;
 
             // Reproduces the camera's current position exactly (lookAtTarget - forward*distance
@@ -85,8 +106,53 @@ namespace RainbowZoo.Core
 
         private void Update()
         {
-            var targetPosition = lookAtTarget - fixedForward * currentDistance;
-            transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * easeSpeed);
+            var effectiveLookAt = lookAtTarget;
+            var effectiveDistance = currentDistance;
+            float effectiveEaseSpeed = easeSpeed;
+
+            if (isFocusing)
+            {
+                focusTimeRemaining -= Time.deltaTime;
+                if (focusTimeRemaining <= 0f)
+                {
+                    isFocusing = false;
+                    easingOutTimeRemaining = interactionFocusEaseOutDurationSeconds;
+                }
+                else
+                {
+                    effectiveLookAt = focusLookAtTarget;
+                    effectiveDistance = Mathf.Min(currentDistance, interactionFocusDistance);
+                    effectiveEaseSpeed = interactionFocusEaseInSpeed;
+                }
+            }
+            else if (easingOutTimeRemaining > 0f)
+            {
+                // effectiveLookAt/effectiveDistance already default to the normal resting
+                // framing above -- this only slows down how quickly we approach it, so the
+                // zoom-out reads as gentle instead of snapping back at the normal ease speed.
+                easingOutTimeRemaining -= Time.deltaTime;
+                effectiveEaseSpeed = interactionFocusEaseOutSpeed;
+            }
+
+            var targetPosition = effectiveLookAt - fixedForward * effectiveDistance;
+            transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * effectiveEaseSpeed);
+        }
+
+        /// <summary>
+        /// Gentle zoom toward a specific habitat when the player interacts with it (Pet/Feed/Play
+        /// tap, see InputRouter.EndGesture), so the resulting reaction reads clearly even once the
+        /// zoo has grown large enough that auto-fit framing shows everything at a small size.
+        /// Eases in through the same Update() lerp as everything else (just a temporarily
+        /// different lookAtTarget/distance), holds for interactionFocusHoldSeconds, then eases
+        /// back out automatically once the timer lapses -- no separate animation needed for the
+        /// "gentle" in/out. Never zooms further out than the current auto-fit distance (see
+        /// Update()'s Mathf.Min) -- this is purely a zoom-in aid, never a step backward.
+        /// </summary>
+        public void FocusOnHabitat(Vector3 habitatWorldCenter)
+        {
+            isFocusing = true;
+            focusTimeRemaining = interactionFocusHoldSeconds;
+            focusLookAtTarget = habitatWorldCenter;
         }
 
         private void RefreshFraming()
