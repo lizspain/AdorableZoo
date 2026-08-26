@@ -22,6 +22,11 @@ namespace RainbowZoo.Core
         [Tooltip("Child transform on animalPrefab the shared Toy parents to while being carried.")]
         [SerializeField] private Transform attachmentPoint;
 
+        [Tooltip("Local position offset from AttachmentPoint where the carried Toy actually sits -- a bone's own pivot isn't always where a toy should visually rest (e.g. a head bone's pivot can be at the top of the skull, not near the mouth). Set via Rainbow Zoo > Content > Toy Attachment Preview, not hand-typed.")]
+        [SerializeField] private Vector3 toyAttachmentOffset;
+        [Tooltip("Local rotation offset (Euler degrees) from AttachmentPoint for the carried Toy.")]
+        [SerializeField] private Vector3 toyAttachmentRotationOffset;
+
         [Header("Toy Appearance")]
         [Tooltip("Mesh/material the shared zoo Toy swaps to when playing with this species. Same Toy object, different skin.")]
         [SerializeField] private ToyAppearance toyAppearance;
@@ -56,6 +61,8 @@ namespace RainbowZoo.Core
         public GameObject HabitatPrefabOverride => habitatPrefabOverride;
         public RuntimeAnimatorController AnimatorController => animatorController;
         public Transform AttachmentPoint => attachmentPoint;
+        public Vector3 ToyAttachmentOffset => toyAttachmentOffset;
+        public Vector3 ToyAttachmentRotationOffset => toyAttachmentRotationOffset;
         public ToyAppearance ToyAppearance => toyAppearance;
         public GameObject PetVfx => petVfx;
         public GameObject PlayVfx => playVfx;

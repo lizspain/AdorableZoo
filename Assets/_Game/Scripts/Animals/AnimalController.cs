@@ -357,7 +357,12 @@ namespace RainbowZoo.Animals
             var toyRigidbody = toy.GetComponent<Rigidbody>();
             if (toyRigidbody != null) toyRigidbody.isKinematic = true;
             toy.SetParent(runtimeAttachmentPoint, true);
-            toy.localPosition = Vector3.zero;
+            // Not just Vector3.zero -- a bone's own pivot isn't always where a toy should
+            // visually rest (e.g. a head bone's pivot can sit at the top of the skull rather than
+            // near the mouth). ToyAttachmentOffset/RotationOffset are tuned per species via
+            // Rainbow Zoo > Content > Toy Attachment Preview.
+            toy.localPosition = definition.ToyAttachmentOffset;
+            toy.localRotation = Quaternion.Euler(definition.ToyAttachmentRotationOffset);
 
             elapsed = 0f;
             while (Vector3.Distance(transform.position, dropPoint.position) > pickupDistance && elapsed < chaseTimeoutSeconds)

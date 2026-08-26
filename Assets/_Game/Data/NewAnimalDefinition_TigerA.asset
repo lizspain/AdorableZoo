@@ -18,6 +18,8 @@ MonoBehaviour:
   habitatPrefabOverride: {fileID: 0}
   animatorController: {fileID: 0}
   attachmentPoint: {fileID: 5256521176271439710, guid: df1bd7960929a46a8981300c8ce575bb, type: 3}
+  toyAttachmentOffset: {x: -0, y: -0.0642, z: 0.022}
+  toyAttachmentRotationOffset: {x: 0, y: 0, z: 0}
   toyAppearance:
     mesh: {fileID: 0}
     materials: []

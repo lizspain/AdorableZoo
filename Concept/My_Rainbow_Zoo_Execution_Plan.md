@@ -2,7 +2,7 @@
 
 ## Current Status (as of 2026-08-24)
 
-Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals are in, wired, and tested working (Unicorn/Whale/Mermaid all confirmed live in Play mode); Settings/Unlock/Reset Zoo tested working too. **Phase 11 (UX Refinement Pass) is next up, starting with Toy Attachment Points.**
+Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals are in, wired, and tested working (Unicorn/Whale/Mermaid all confirmed live in Play mode); Settings/Unlock/Reset Zoo tested working too. **Phase 11 (UX Refinement Pass) is underway** — Toy Attachment Points tooling built and tuned for the 10 starter animals (remaining ~67 animals still TODO, see note below); **Camera Rig refinement is next up.**
 
 | Phase | Status |
 |---|---|
@@ -203,8 +203,14 @@ Applied SFX from `Assets/cplomedia/Animals` to 35 of the 77 `AnimalDefinition` a
 
 Six refinement passes, tackled roughly in this order:
 
-1. **Toy Attachment Points** ⬜ *(starting point)* — build the Editor tool to auto-detect/set a sensible carry-bone per species across all 77 `AnimalDefinition` assets (Phase 10's one remaining content gap; the toy currently carries at the root transform for everyone). Flag any species the heuristic can't confidently match rather than guessing.
-2. **Camera Rig refinement** ⬜ — framing/zoom/pan tuning beyond Phase 6's initial pass.
+1. **Toy Attachment Points** 🟡 *(in progress)*
+   - `Rainbow Zoo > Content > Assign Toy Attachment Points` (`AttachmentPointAssigner.cs`) — auto-detects a carry bone per species (mouth/jaw/muzzle/snout/beak first, falling back to head) across all 77 `AnimalDefinition`s and sets `AttachmentPoint`. Idempotent; run and confirmed working. Spot-checked against Owl/Monkey/Crocodile/Turtle rigs before shipping -- `Head` held up as a reliable fallback across bird/primate/reptile/mammal rigs.
+   - **Found in testing:** a bone's own pivot isn't always where a toy should visually sit -- Monkey's head-bone pivot is at the top of the skull, so the toy read as balanced on top of its head rather than held near its face.
+   - `Rainbow Zoo > Content > Toy Attachment Preview` (`ToyAttachmentPreviewWindow.cs`, new) — pick an `AnimalDefinition`, spawn a live preview of the animal + a Toy stand-in (built identically to `ToyController.BuildToy`) parented to the resolved bone, drag it with Unity's normal Move/Rotate gizmo, "Save Offset" writes it back. `AnimalDefinition` gained `ToyAttachmentOffset`/`ToyAttachmentRotationOffset` (local position/rotation relative to the bone); `AnimalController.ChaseSequence` now applies these instead of always zeroing local position.
+   - **Fixed:** the preview toy was rendering at ~1m instead of the real 0.3m -- several rigs bake a non-unit scale into the model wrapper (e.g. Deer's is 6x) that every bone inherits, and the tool wasn't compensating for it the way `ChaseSequence`'s own `SetParent(parent, true)` does. Fixed by setting the toy's world-space size before parenting, then reparenting with `worldPositionStays: true` so Unity auto-compensates per-bone, matching runtime behavior exactly.
+   - **Done:** offsets manually tuned via the preview tool for the 10 starter/free-tier animals (confirmed working).
+   - **TODO, later in this phase:** manually set `ToyAttachmentOffset`/`RotationOffset` on the remaining ~67 non-starter animals using the same preview tool. Not urgent (the auto-assigned bone is a reasonable default even unrefined), but left for a pass once the rest of Phase 11 is further along.
+2. **Camera Rig refinement** 🟡 *(current step)* — framing/zoom/pan tuning beyond Phase 6's initial pass.
 3. **Interaction response & animation timing refinement** ⬜ — Pet/Play/Feed/Jump timing values across `AnimalController`/`ZooEconomyConfig`.
 4. **Sound refinement** ⬜ — beyond the Phase 10 audio content pass (35/77 animals covered); revisit the family-substitution choices, the still-silent 41, and general mix/ducking feel.
 5. **VFX refinement** ⬜ — real celebration/heart-gain VFX to replace `DebugInteractionVfx`'s placeholder bursts (still explicitly a stand-in, not yet touched since Phase 9's pooling pass).
