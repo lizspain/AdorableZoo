@@ -17,7 +17,7 @@ MonoBehaviour:
   animalPrefab: {fileID: 3085116604205702717, guid: 53f190cefd92a4c8d95580333b11031c, type: 3}
   habitatPrefabOverride: {fileID: 0}
   animatorController: {fileID: 0}
-  attachmentPoint: {fileID: 0}
+  attachmentPoint: {fileID: 7175722538443942995, guid: 53f190cefd92a4c8d95580333b11031c, type: 3}
   toyAppearance:
     mesh: {fileID: 0}
     materials: []

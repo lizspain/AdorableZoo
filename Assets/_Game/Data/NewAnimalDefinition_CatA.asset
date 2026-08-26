@@ -17,7 +17,7 @@ MonoBehaviour:
   animalPrefab: {fileID: 1186309466760236, guid: e345193c428d146cd96f6d5f842ebfac, type: 3}
   habitatPrefabOverride: {fileID: 0}
   animatorController: {fileID: 0}
-  attachmentPoint: {fileID: 0}
+  attachmentPoint: {fileID: 4739132225242444, guid: e345193c428d146cd96f6d5f842ebfac, type: 3}
   toyAppearance:
     mesh: {fileID: 0}
     materials: []
@@ -25,9 +25,9 @@ MonoBehaviour:
   playVfx: {fileID: 0}
   feedVfx: {fileID: 0}
   celebrationVfx: {fileID: 0}
-  petSfx: {fileID: 8300000, guid: 985b5ffafb336764ba61598a85ec01c9, type: 3}
-  playSfx: {fileID: 8300000, guid: 661c643b7b59a854faf61e2814645ccd, type: 3}
-  feedSfx: {fileID: 8300000, guid: 661c643b7b59a854faf61e2814645ccd, type: 3}
+  petSfx: {fileID: 0}
+  playSfx: {fileID: 8300000, guid: 5fc40e72742a58540b4517b843ce164b, type: 3}
+  feedSfx: {fileID: 8300000, guid: 9eacbaf82c7e81b408302aff120e524e, type: 3}
   celebrationSfx: {fileID: 0}
   isMythical: 0
   rarityTag: standard

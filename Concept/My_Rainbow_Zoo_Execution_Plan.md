@@ -2,7 +2,7 @@
 
 ## Current Status (as of 2026-08-24)
 
-Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals are in, wired, and tested working (Unicorn/Whale/Mermaid all confirmed live in Play mode). **No phase is "next up" by default right now** -- see the open items below for what's actually left.
+Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals are in, wired, and tested working (Unicorn/Whale/Mermaid all confirmed live in Play mode); Settings/Unlock/Reset Zoo tested working too. **Phase 11 (UX Refinement Pass) is next up, starting with Toy Attachment Points.**
 
 | Phase | Status |
 |---|---|
@@ -17,7 +17,8 @@ Phases 0–8 are implemented. Phase 10's regular roster + all 3 new mythicals ar
 | 8 — Save System | ✅ Done |
 | 9 — Performance Pass | 🟡 Partial, pinned -- off-camera LOD/VFX pooling/bake timing done in code; GPU-instancing menu tool built but not confirmed run; texture atlasing and device profiling still need your hands-on Editor/device time |
 | 10 — Vertical Slice Content | 🟡 Mostly done -- full regular roster generated and registered, all 3 mythicals (Unicorn/Whale/Mermaid) built, wired, and tested working; `MythicStandin` removed; 35/77 animals have SFX applied (41 have no defensible sound match, see Audio Content Pass below). Free tier decided and *enforced* -- see Settings/Unlock/Reset Zoo below. Open: attachmentPoint/toyAppearance unset on nearly every non-Cat animal |
-| 11 — QA & Testing Pass | 🟡 Partial — Edit Mode tests exist for `ZooEconomyConfig`, `GridPlacementPlanner`, `OfferGenerator`, `SaveSystem`; no Play Mode tests yet, no moderated playtesting yet |
+| 11 — UX Refinement Pass *(redefined, was QA)* | ⬜ Not started -- next up: Toy Attachment Points, then Camera Rig, Interaction/Animation timing, Sound, VFX, UI passes |
+| 12 — QA & Testing Pass *(was Phase 11)* | 🟡 Partial — Edit Mode tests exist for `ZooEconomyConfig`, `GridPlacementPlanner`, `OfferGenerator`, `SaveSystem`; no Play Mode tests yet, no moderated playtesting yet |
 
 ## Context
 
@@ -198,7 +199,20 @@ Applied SFX from `Assets/cplomedia/Animals` to 35 of the 77 `AnimalDefinition` a
 - **Generic "it's a bird" substitution:** Flamingo, Ostrich, Peacock → the generic `SW_Birds*` ambience clips (no species-specific match exists for any of them).
 - **41 unmatched, no defensible substitution available:** Anteater (A/B), Armadillo (A/B), Bear (A/B), Boar (A/B), Camel (A/B), Chameleon (A/B), Chipmunk, Crocodile (A/B), Giraffe, Hippo, Iguana (A/B), Kangaroo, Koala, Malayan Tapir, Meerkat, Mermaid, Mole, Otter, Pangolin, Platypus (A/B), Porcupine, Possum (both the original placeholder and the roster-generated one), Raccoon, Red Panda, Rhino, Skunk, Sloth, Squirrel (A/B), Turtle, Whale.
 
-## Phase 11 — QA & Testing Pass 🟡
+## Phase 11 — UX Refinement Pass 🟡 *(redefined 2026-08-24 -- was "QA & Testing Pass"; that work moved to Phase 12 below, not dropped)*
+
+Six refinement passes, tackled roughly in this order:
+
+1. **Toy Attachment Points** ⬜ *(starting point)* — build the Editor tool to auto-detect/set a sensible carry-bone per species across all 77 `AnimalDefinition` assets (Phase 10's one remaining content gap; the toy currently carries at the root transform for everyone). Flag any species the heuristic can't confidently match rather than guessing.
+2. **Camera Rig refinement** ⬜ — framing/zoom/pan tuning beyond Phase 6's initial pass.
+3. **Interaction response & animation timing refinement** ⬜ — Pet/Play/Feed/Jump timing values across `AnimalController`/`ZooEconomyConfig`.
+4. **Sound refinement** ⬜ — beyond the Phase 10 audio content pass (35/77 animals covered); revisit the family-substitution choices, the still-silent 41, and general mix/ducking feel.
+5. **VFX refinement** ⬜ — real celebration/heart-gain VFX to replace `DebugInteractionVfx`'s placeholder bursts (still explicitly a stand-in, not yet touched since Phase 9's pooling pass).
+6. **UI pass** ⬜ — visual polish across the Offer Tableau, Settings menu, Zoo Navigation Bars, etc. now that they're all functionally wired.
+
+**Current state:** not started. Attachment Points is next up.
+
+## Phase 12 — QA & Testing Pass 🟡 *(was Phase 11)*
 
 - Edit Mode tests: threshold formula, offer weighting/mythical-roll probability (statistical sampling), save/backup round-trip.
 - Play Mode tests: interaction-lock timing, Care-Meter-complete event firing, camera zoom/pan boundaries.
@@ -207,14 +221,14 @@ Applied SFX from `Assets/cplomedia/Animals` to 35 of the 77 `AnimalDefinition` a
 - Repeat device profiling from Phase 9 against the content-complete build.
 - Bug-fix/polish iteration.
 
-**Current state:** Edit Mode tests exist for the threshold formula (`ZooEconomyConfigTests`), grid placement (`GridPlacementPlannerTests`), and offer weighting (`OfferGeneratorTests`). No save/backup tests yet (blocked on Phase 8), no Play Mode tests yet, no playtesting yet.
+**Current state:** Edit Mode tests exist for the threshold formula (`ZooEconomyConfigTests`), grid placement (`GridPlacementPlannerTests`), offer weighting (`OfferGeneratorTests`, now including the Phase 10 lock/unlock gating), and the save system (`SaveSystemTests`). No Play Mode tests yet, no playtesting yet.
 
 ## Verification
 
 Each phase lists its own testable output above — play-test in the Unity Editor after every phase rather than validating only at the end. Additionally:
 - Phase 1 onward: `Threshold(n)` and later `OfferGenerator` weighting/probability get Edit Mode tests runnable via the Unity Test Runner window, independent of any scene.
 - Phase 5 onward: the full core loop should be manually played in `MyRainbowZooMain.unity` after every phase touching `ZooManager`/`AnimalController`/`InputRouter`, since these are the systems every later phase builds on.
-- Phase 9/11: an actual on-device build against the real test device is required to validate the 30fps target — Editor profiling alone isn't sufficient evidence. **Device note:** referred to as "iPhone 9 Pro" — Apple has no device by that exact name (closest matches are iPhone X or the iPhone SE 2nd gen, sometimes informally called "iPhone 9"); worth double-checking the exact model before the Phase 9 profiling pass so the min-spec target is unambiguous.
+- Phase 9/12: an actual on-device build against the real test device is required to validate the 30fps target — Editor profiling alone isn't sufficient evidence. **Device note:** referred to as "iPhone 9 Pro" — Apple has no device by that exact name (closest matches are iPhone X or the iPhone SE 2nd gen, sometimes informally called "iPhone 9"); worth double-checking the exact model before the Phase 9 profiling pass so the min-spec target is unambiguous.
 
 ## Monetization (new decision, not in the original design doc)
 
