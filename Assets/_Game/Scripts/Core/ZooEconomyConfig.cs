@@ -34,12 +34,14 @@ namespace RainbowZoo.Core
         [SerializeField] private float feedLockSeconds = 0.3f;
 
         [Header("Animation Durations (how long the Rest/Eat animation actually plays before returning to Idle/Wander -- separate from the anti-spam locks above; a different interaction type requested during this window is queued and fires immediately once it ends)")]
-        [SerializeField] private float petAnimationSeconds = 1f;
-        [SerializeField] private float feedAnimationSeconds = 1.2f;
+        [Tooltip("The vendor Animator Controllers gate Idle->Rest on an exit-time (waits for the Idle loop to reach ~73% before even starting to blend into Rest) -- this needs to be long enough to absorb that wait *and* the transition blend *and* still leave a real dwell at the peak pose, or Rest reads as barely-arrived before Jump cuts it off. Raised from 1s after exactly that feedback.")]
+        [SerializeField] private float petAnimationSeconds = 2f;
+        [Tooltip("Same exit-time-gating reasoning as petAnimationSeconds. Raised from 1.2s.")]
+        [SerializeField] private float feedAnimationSeconds = 2.2f;
 
         [Header("Shared Toy")]
         [Tooltip("Seconds the shared Toy remains visible at the habitat's Toy Drop Point before despawning back to the pool.")]
-        [SerializeField] private float toyDropDurationSeconds = 3f;
+        [SerializeField] private float toyDropDurationSeconds = 1.5f;
 
         public int PetHearts => petHearts;
         public int PlayHearts => playHearts;

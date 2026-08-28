@@ -261,7 +261,8 @@ namespace RainbowZoo.Core
 
             // One Toy per habitat (not shared zoo-wide) -- Play on one habitat never blocks or
             // steals from Play on another.
-            habitat.AddComponent<ToyController>();
+            var toyController = habitat.AddComponent<ToyController>();
+            toyController.Initialize(economyConfig);
 
             // Phase 9 perf pass: pauses this habitat's wander/audio polling and disables its
             // containment Walls whenever it's outside the camera's frustum.

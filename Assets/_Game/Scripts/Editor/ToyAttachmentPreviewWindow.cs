@@ -181,6 +181,15 @@ namespace RainbowZoo.Editor
 
         private void ClearPreview()
         {
+            // Same reasoning as OfferTableauController's ClearPreview: if the preview Toy/animal
+            // is currently selected in the Hierarchy (likely, since SpawnPreview auto-selects the
+            // Toy), destroying it while still selected makes the Inspector throw a
+            // MissingReferenceException trying to redraw its now-null target.
+            if (Selection.activeGameObject == previewToy || Selection.activeGameObject == previewAnimalRoot)
+            {
+                Selection.activeGameObject = null;
+            }
+
             if (previewAnimalRoot != null) DestroyImmediate(previewAnimalRoot);
             previewAnimalRoot = null;
             previewToy = null;

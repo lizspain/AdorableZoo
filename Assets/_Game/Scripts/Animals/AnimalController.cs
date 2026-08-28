@@ -33,6 +33,10 @@ namespace RainbowZoo.Animals
         [SerializeField] private float pickupDistance = 0.5f;
         [Tooltip("Safety valve: gives up waiting to arrive at the toy or the drop point after this long, proceeding from wherever the agent actually got to, rather than risk stalling forever on an unreachable destination.")]
         [SerializeField] private float chaseTimeoutSeconds = 6f;
+        [Tooltip("How many random legs the animal runs around the habitat with the toy (still at ChaseSpeed) after picking it up, before heading to the Toy Drop Point -- purely a visual flourish so Play doesn't read as an instant pickup-and-drop.")]
+        [SerializeField] private int playCarryAroundLegs = 2;
+        [Tooltip("Safety valve per carry-around leg -- same reasoning as chaseTimeoutSeconds.")]
+        [SerializeField] private float playCarryAroundLegTimeoutSeconds = 1.5f;
 
         private ControllerPetZoo controllerPetZoo;
         private NavMeshAgent agent;
@@ -364,6 +368,8 @@ namespace RainbowZoo.Animals
             toy.localPosition = definition.ToyAttachmentOffset;
             toy.localRotation = Quaternion.Euler(definition.ToyAttachmentRotationOffset);
 
+            yield return CarryAroundHabitat();
+
             elapsed = 0f;
             while (Vector3.Distance(transform.position, dropPoint.position) > pickupDistance && elapsed < chaseTimeoutSeconds)
             {
@@ -386,6 +392,25 @@ namespace RainbowZoo.Animals
 
             state = State.IdleWander;
             ResumeAfterFree();
+        }
+
+        /// <summary>Runs a few random legs around the habitat (still carrying the toy, still at ChaseSpeed) between pickup and heading to the Toy Drop Point -- otherwise Play reads as an instant grab-and-drop with no sense of actually playing.</summary>
+        private IEnumerator CarryAroundHabitat()
+        {
+            for (int leg = 0; leg < playCarryAroundLegs; leg++)
+            {
+                var offset2D = UnityEngine.Random.insideUnitCircle * wanderRadius;
+                var candidate = habitatCenter + new Vector3(offset2D.x, 0f, offset2D.y);
+                if (!NavMesh.SamplePosition(candidate, out var hit, 1f, NavMesh.AllAreas)) continue;
+
+                float legElapsed = 0f;
+                while (Vector3.Distance(transform.position, hit.position) > waypointArrivalThreshold && legElapsed < playCarryAroundLegTimeoutSeconds)
+                {
+                    controllerPetZoo.SetDestination(hit.position);
+                    legElapsed += Time.deltaTime;
+                    yield return null;
+                }
+            }
         }
 
         private IEnumerator ReactSequence(int animatorBoolParam, float animationSeconds, int heartsEarned)
@@ -419,6 +444,12 @@ namespace RainbowZoo.Animals
 
             if (foodDishTransform != null)
             {
+                // Boosted the same as Play's approach to the toy -- previously this walked at
+                // ordinary wander speed, so a dish tap while the animal was on the far side of
+                // the habitat read as a long, unexplained pause before Eat/VFX ever fired.
+                float originalSpeed = agent.speed;
+                agent.speed = economyConfig.ChaseSpeed;
+
                 float elapsed = 0f;
                 while (Vector3.Distance(transform.position, foodDishTransform.position) > pickupDistance && elapsed < chaseTimeoutSeconds)
                 {
@@ -426,6 +457,8 @@ namespace RainbowZoo.Animals
                     elapsed += Time.deltaTime;
                     yield return null;
                 }
+
+                agent.speed = originalSpeed;
             }
 
             // Clear the current path and give one frame for ControllerPetZoo.Update() to feed the

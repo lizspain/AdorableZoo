@@ -267,6 +267,18 @@ namespace RainbowZoo.UI
             var preview = slotPreviews[slotIndex];
             if (preview == null) return;
 
+#if UNITY_EDITOR
+            // Dev-inspector nicety only, stripped from real builds: if one of these dynamically
+            // created preview objects happens to be selected in the Hierarchy when destroyed, the
+            // Inspector throws a MissingReferenceException trying to redraw its now-null target.
+            // Harmless (Selection doesn't exist outside the Editor), but noisy in the Console.
+            bool previewCameraSelected = preview.Camera != null && UnityEditor.Selection.activeGameObject == preview.Camera.gameObject;
+            if (UnityEditor.Selection.activeGameObject == preview.ModelInstance || previewCameraSelected)
+            {
+                UnityEditor.Selection.activeGameObject = null;
+            }
+#endif
+
             if (preview.ModelInstance != null) Destroy(preview.ModelInstance);
             if (preview.Camera != null) Destroy(preview.Camera.gameObject);
             if (preview.RenderTexture != null) preview.RenderTexture.Release();

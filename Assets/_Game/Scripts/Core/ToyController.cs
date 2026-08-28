@@ -9,18 +9,15 @@ namespace RainbowZoo.Core
     /// "one toy for the whole zoo" design once that turned out to make Play interactions on
     /// different habitats contend with each other) -- Play on one habitat never blocks or steals
     /// from Play on another. Rigidbody-driven, re-skinned per species. Owns its full lifecycle:
-    /// follows the touch while held, gets thrown on release, waits for it to settle, hands off to
-    /// this habitat's AnimalController to chase/carry/drop it, then despawns a few seconds after
+    /// follows the touch while held, gets thrown on release, hands off immediately to this
+    /// habitat's AnimalController to chase/carry/drop it, then despawns a few seconds after
     /// being dropped.
     /// </summary>
     [RequireComponent(typeof(HabitatRuntime))]
     public sealed class ToyController : MonoBehaviour
     {
-        [SerializeField] private float dropVisibleSeconds = 3f;
-        [SerializeField] private float settleSpeedThreshold = 0.05f;
-        [SerializeField] private float settleTimeoutSeconds = 5f;
-
         private HabitatRuntime habitatRuntime;
+        private ZooEconomyConfig economyConfig;
         private GameObject toy;
         private Rigidbody toyRigidbody;
         private MeshFilter toyMeshFilter;
@@ -32,6 +29,12 @@ namespace RainbowZoo.Core
         {
             habitatRuntime = GetComponent<HabitatRuntime>();
             BuildToy();
+        }
+
+        /// <summary>Called by ZooManager right after AddComponent -- ToyDropDurationSeconds previously had no way to reach this class at all, so it sat unused while a separate hardcoded default did the actual job.</summary>
+        public void Initialize(ZooEconomyConfig config)
+        {
+            economyConfig = config;
         }
 
         private void BuildToy()
@@ -68,29 +71,21 @@ namespace RainbowZoo.Core
             toy.transform.position = worldPoint;
         }
 
-        /// <summary>Throws the toy with the given velocity, then waits for it to settle before handing off to this habitat's animal.</summary>
+        /// <summary>
+        /// Throws the toy with the given velocity and immediately sends the animal after it --
+        /// previously this waited for the toy's Rigidbody to settle below a velocity threshold
+        /// (up to 5s) before even starting the chase, which read as the animal ignoring the throw
+        /// and continuing to wander for a long, unexplained stretch. AnimalController.ChaseSequence
+        /// re-targets the toy's live position every frame regardless, so it tracks a still-bouncing
+        /// toy just fine -- by the time the animal is actually close enough to pick it up, the toy
+        /// has virtually always settled on its own anyway.
+        /// </summary>
         public void Release(Vector3 throwVelocity)
         {
             if (!IsBusy) return;
             toyRigidbody.isKinematic = false;
             toyRigidbody.linearVelocity = throwVelocity;
             DebugInteractionVfx.SpawnBurst(toy.transform.position, Color.green);
-            StartCoroutine(WaitForSettleThenHandoff());
-        }
-
-        private IEnumerator WaitForSettleThenHandoff()
-        {
-            float elapsed = 0f;
-            while (elapsed < settleTimeoutSeconds)
-            {
-                if (toyRigidbody.linearVelocity.sqrMagnitude < settleSpeedThreshold * settleSpeedThreshold)
-                {
-                    break;
-                }
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
             habitatRuntime.Animal.ChaseAndFetchToy(toy.transform, habitatRuntime.ToyDropPoint, OnDropped);
         }
 
@@ -101,7 +96,7 @@ namespace RainbowZoo.Core
 
         private IEnumerator DespawnAfterDelay()
         {
-            yield return new WaitForSeconds(dropVisibleSeconds);
+            yield return new WaitForSeconds(economyConfig.ToyDropDurationSeconds);
             toy.SetActive(false);
             toy.transform.SetParent(transform, false);
             IsBusy = false;
