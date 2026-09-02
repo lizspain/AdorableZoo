@@ -311,7 +311,18 @@ namespace RainbowZoo.UI
             if (root != null) root.style.display = DisplayStyle.None;
             ClearAllPreviews();
 
-            ZooManager.Instance.PlaceAnimal(definition);
+            var habitat = ZooManager.Instance.PlaceAnimal(definition);
+
+            // Zoom in on the animal the player just picked so they land somewhere they can
+            // immediately interact with it, rather than the wide auto-fit view. Hooked here
+            // (not ZooManager.OnHabitatPlaced, which CameraRig also subscribes to for
+            // RefreshFraming) specifically because that event also fires for every habitat
+            // replayed from a save on load -- focusing here only fires for an actual player
+            // tableau selection.
+            if (habitat != null)
+            {
+                CameraRig.Instance?.FocusOnHabitat(habitat.transform.position);
+            }
         }
     }
 }

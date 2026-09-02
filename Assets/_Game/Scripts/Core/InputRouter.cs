@@ -110,6 +110,19 @@ namespace RainbowZoo.Core
             pressedHabitat = hit.collider.GetComponentInParent<HabitatRuntime>();
             pressedAnimal = hit.collider.GetComponentInParent<AnimalController>();
 
+            // A habitat currently faded into the background (HabitatOcclusionFader, e.g. a closer
+            // row blocking the view of a focused interaction) shouldn't be interactable while it's
+            // visibly faded -- but any OTHER habitat that's simply not the current focus target,
+            // and isn't faded, stays fully interactable. Treat a press on a faded one as if it hit
+            // nothing at all.
+            var fader = HabitatOcclusionFader.Instance;
+            if (fader != null && pressedHabitat != null && fader.IsHabitatFaded(pressedHabitat.gameObject))
+            {
+                pressedHabitat = null;
+                pressedAnimal = null;
+                return;
+            }
+
             if (pressedHabitat != null && pressedHabitat.FoodDish != null && hit.collider.transform == pressedHabitat.FoodDish)
             {
                 pressedFoodDishHabitat = pressedHabitat;

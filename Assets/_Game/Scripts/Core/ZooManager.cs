@@ -38,6 +38,9 @@ namespace RainbowZoo.Core
         public ZooLayoutState LayoutState => layoutState;
         public ZooCareMeterState CareMeterState => careMeterState;
 
+        /// <summary>Every placed habitat's root GameObject, in placement order -- read-only exposure for HabitatOcclusionFader (Phase 11), which needs to frustum-test each one against the focused habitat without ZooManager knowing anything about rendering.</summary>
+        public IReadOnlyList<GameObject> InstantiatedHabitats => instantiatedHabitats;
+
         /// <summary>Monetization model: 9 regular + 1 mythic animal free, the rest behind a one-time full-roster unlock (AnimalDefinition.IsIntroductory marks the free set). Gates OfferGenerator's candidate pool.</summary>
         public bool HasFullUnlock => hasFullUnlock;
 

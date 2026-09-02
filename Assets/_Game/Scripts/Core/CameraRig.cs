@@ -21,6 +21,11 @@ namespace RainbowZoo.Core
     /// guarantee the focused habitat never drifts off-center, so if yaw ever enters the picture
     /// both Pan's world-axis mapping and the focus centering guarantee would need rework.
     ///
+    /// Also auto-attaches a HabitatOcclusionFader to this same GameObject (see Awake) -- a
+    /// separate component that reads OcclusionFade01/FocusedHabitatCenter below to fade out any
+    /// other habitat sitting in the camera's frustum while one is focused, so closer rows can't
+    /// visually block the animal actually being watched.
+    ///
     /// Framing math is a flat-plane approximation (world X/Z bounds mapped directly onto
     /// horizontal/vertical FOV), not an exact tilted-frustum-vs-ground-plane solve -- reasonable
     /// given every value here is meant to be tuned by eye, not computed to be pixel-perfect.
@@ -54,45 +59,65 @@ namespace RainbowZoo.Core
         [Tooltip("Distance to dolly in to when focusing -- never zooms further OUT than the current auto-fit distance, only in, so this only matters once the zoo has grown enough that auto-fit is already farther away than this.")]
         [SerializeField] private float interactionFocusDistance = 7f;
         [Tooltip("Pitch to ease toward while focusing -- lower than the normal pitchDegrees (more level, less top-down) so the animal's animation actually reads instead of being foreshortened by a steep overhead angle. Eases back to pitchDegrees automatically once the focus ends.")]
-        [SerializeField] private float interactionFocusPitchDegrees = 15f;
+        [SerializeField] private float interactionFocusPitchDegrees = 25f;
         [Tooltip("How long the focused view holds before easing back to normal auto-fit framing.")]
-        [SerializeField] private float interactionFocusHoldSeconds = 3f;
-        [Tooltip("Ease speed for the DISTANCE-only leg of zooming in on a habitat -- pitch stays at the resting pitchDegrees throughout this leg (see interactionFocusPitchInSpeed for the angle leg that follows once this one finishes). Sped up per feedback that the zoom-in felt slow; if this field already has a value saved in the Inspector from earlier tuning, bump it there too -- a new code default doesn't overwrite an existing serialized override.")]
-        [SerializeField] private float interactionFocusEaseInSpeed = 3.5f;
-        [Tooltip("Ease speed for the ANGLE-only leg that follows the distance leg above once zooming in -- kept as its own field so the two legs (distance, then angle) can be tuned independently. The distance leg fully completes first (pure zoom, angle unchanged) before this leg begins, so the habitat never drifts off-center chasing a moving look direction mid-shift.")]
-        [SerializeField] private float interactionFocusPitchInSpeed = 3f;
-        [Tooltip("Ease speed for BOTH legs of zooming back OUT to normal framing after the hold ends (angle first, then distance -- the reverse order of zooming in). Since these are now two sequential legs instead of one combined motion, the full zoom-out takes roughly twice as long to finish as this single speed value would suggest; split it into separate angle-out/distance-out fields if that reads as too slow once tested.")]
-        [SerializeField] private float interactionFocusEaseOutSpeed = 0.8f;
-
-        /// <summary>How close (world units) the eased focus look-at point must get to its target before the distance leg is considered converged.</summary>
-        private const float FocusLookAtEpsilon = 0.05f;
-        /// <summary>How close (world units) the eased focus distance must get to its target before the distance leg is considered converged.</summary>
-        private const float FocusDistanceEpsilon = 0.05f;
-        /// <summary>How close (degrees) currentPitch must get to its target before a pitch leg is considered converged.</summary>
-        private const float FocusPitchEpsilonDegrees = 0.3f;
+        [SerializeField] private float interactionFocusHoldSeconds = 4f;
+        [Tooltip("Total time for the zoom-IN dolly (distance + look-at). The angle change is blended into the tail of this same motion (see interactionFocusPitchTailSeconds) rather than following it as a separate step, so the whole zoom-in reads as one continuous curve.")]
+        [SerializeField] private float interactionFocusZoomInDurationSeconds = 1.1f;
+        [Tooltip("How much of the END of the zoom-in duration is devoted to blending the angle in (the 'last bit' of the motion) -- e.g. 0.5 of a 1.1s zoom-in means distance eases the whole 1.1s while angle only starts moving at the 0.6s mark, so both finish together. Mirrored at the START of zoom-out (angle leads, since that's when the camera is still close/zoomed and the angle change reads clearly), so the same field governs both directions.")]
+        [SerializeField] private float interactionFocusPitchTailSeconds = 0.5f;
+        [Tooltip("Total time for the zoom-OUT dolly (distance + look-at) back to normal framing, and angle back to pitchDegrees -- angle leads (see interactionFocusPitchTailSeconds), distance runs the whole duration. Deliberately longer than the zoom-in duration so zooming out still reads as gentle.")]
+        [SerializeField] private float interactionFocusZoomOutDurationSeconds = 2f;
+        [Tooltip("Alpha the OTHER habitats in frame fade down to while one is focused -- 0.1 = 10% opacity, so they can't visually block the focused animal. See HabitatOcclusionFader.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float interactionFocusOcclusionOpacity = 0.1f;
+        [Tooltip("How much of the END of the zoom-in duration the occlusion fade-out runs over (mirrored at the START of zoom-out for the fade back in) -- kept separate from interactionFocusPitchTailSeconds so the two can be tuned independently even though they default to the same feel.")]
+        [SerializeField] private float interactionFocusOcclusionFadeSeconds = 0.5f;
 
         /// <summary>
-        /// The interaction-focus sequence, always run in this order on the way in and reversed on
-        /// the way out. Splitting distance and angle into separate legs -- never easing both at
-        /// once -- is what guarantees the focused habitat stays exactly centered throughout: with
-        /// zero yaw, camera position is always exactly "look-at minus forward(pitch)*distance", so
-        /// holding two of {look-at, pitch, distance} fixed while only the third eases keeps that
-        /// point locked in the center of frame at every intermediate moment, not just once the
-        /// motion finishes.
+        /// The interaction-focus sequence: ZoomIn blends a distance dolly (the whole duration)
+        /// with an angle change (only the tail -- see interactionFocusPitchTailSeconds) into one
+        /// continuous curve, Holding keeps everything fixed, ZoomOut reverses it (angle leads).
+        /// Camera position is derived DIRECTLY from (look-at, pitch, distance) every frame in
+        /// every one of these phases -- never through a second layer of position-level easing on
+        /// top -- which is what guarantees the focused habitat stays exactly centered throughout:
+        /// with zero yaw, "position = look-at minus forward(pitch)*distance" means forward always
+        /// points exactly at look-at, for ANY combination of pitch/distance/look-at values, so it
+        /// doesn't matter how many of the three are moving at once.
         /// </summary>
-        private enum FocusPhase { None, DollyIn, PitchIn, Holding, PitchOut, DollyOut }
+        private enum FocusPhase { None, ZoomIn, Holding, ZoomOut }
 
         private Camera cam;
         private float ceilingDistance;
         private float currentDistance;
         private Vector3 lookAtTarget;
-        private float currentPitch;
 
         private FocusPhase focusPhase = FocusPhase.None;
         private Vector3 focusLookAtTarget;
-        private Vector3 easedFocusLookAt;
-        private float focusDistance;
         private float focusHoldRemaining;
+
+        // Authoritative "where the camera conceptually is right now" -- kept accurate every
+        // frame in every phase, so FocusOnHabitat can always seed a fresh ZoomIn from wherever
+        // the camera actually is (no pop), regardless of what phase was active when it's called.
+        private float currentPitch;
+        private Vector3 currentLookAt;
+        private float currentDistanceValue;
+
+        private float zoomInElapsed;
+        private Vector3 zoomInStartLookAt;
+        private float zoomInStartDistance;
+        private float zoomInStartPitch;
+
+        private float zoomOutElapsed;
+        private Vector3 zoomOutStartLookAt;
+        private float zoomOutStartDistance;
+        private float zoomOutStartPitch;
+
+        /// <summary>0 = normal, 1 = fully faded. Read by HabitatOcclusionFader; non-zero only during the tail of ZoomIn, all of Holding, and the head of ZoomOut.</summary>
+        public float OcclusionFade01 { get; private set; }
+
+        /// <summary>World position of the habitat currently being focused -- only meaningful while OcclusionFade01 > 0.</summary>
+        public Vector3 FocusedHabitatCenter { get; private set; }
 
         /// <summary>True once content has grown past the 5x3 ceiling and the camera is holding distance -- the only state panning is meaningful in.</summary>
         public bool IsAtCeiling { get; private set; }
@@ -107,6 +132,11 @@ namespace RainbowZoo.Core
             Instance = this;
             cam = GetComponent<Camera>();
 
+            if (GetComponent<HabitatOcclusionFader>() == null)
+            {
+                gameObject.AddComponent<HabitatOcclusionFader>();
+            }
+
             currentPitch = pitchDegrees;
             transform.rotation = Quaternion.Euler(currentPitch, 0f, 0f);
 
@@ -116,6 +146,8 @@ namespace RainbowZoo.Core
             // exists to frame.
             currentDistance = 10f;
             lookAtTarget = transform.position + transform.forward * currentDistance;
+            currentLookAt = lookAtTarget;
+            currentDistanceValue = currentDistance;
         }
 
         private void Start()
@@ -138,135 +170,181 @@ namespace RainbowZoo.Core
                 case FocusPhase.None:
                     UpdateResting();
                     break;
-                case FocusPhase.DollyIn:
-                    UpdateFocusDolly(focusLookAtTarget, Mathf.Min(currentDistance, interactionFocusDistance), interactionFocusEaseInSpeed, FocusPhase.PitchIn);
-                    break;
-                case FocusPhase.PitchIn:
-                    UpdateFocusPitch(interactionFocusPitchDegrees, interactionFocusPitchInSpeed, FocusPhase.Holding);
+                case FocusPhase.ZoomIn:
+                    UpdateZoomIn();
                     break;
                 case FocusPhase.Holding:
                     UpdateHolding();
                     break;
-                case FocusPhase.PitchOut:
-                    UpdateFocusPitch(pitchDegrees, interactionFocusEaseOutSpeed, FocusPhase.DollyOut);
-                    break;
-                case FocusPhase.DollyOut:
-                    UpdateFocusDolly(lookAtTarget, currentDistance, interactionFocusEaseOutSpeed, FocusPhase.None);
+                case FocusPhase.ZoomOut:
+                    UpdateZoomOut();
                     break;
             }
         }
 
-        /// <summary>Normal auto-fit/pan framing -- pitch is already at rest by the time this state is ever reached (PitchOut always finishes before DollyOut, DollyOut always finishes before handing back here), so plain position easing toward lookAtTarget is safe: forward doesn't change mid-ease in this state.</summary>
+        /// <summary>Normal auto-fit/pan framing -- pitch is already at rest by the time this state is ever reached, so plain position easing toward lookAtTarget is safe: forward doesn't change mid-ease in this state.</summary>
         private void UpdateResting()
         {
+            OcclusionFade01 = 0f;
             currentPitch = pitchDegrees;
             transform.rotation = Quaternion.Euler(currentPitch, 0f, 0f);
 
             var targetPosition = lookAtTarget - transform.forward * currentDistance;
             transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * easeSpeed);
+
+            currentLookAt = lookAtTarget;
+            currentDistanceValue = currentDistance;
         }
 
-        /// <summary>
-        /// The distance-only leg (DollyIn / DollyOut): pitch is left exactly as-is (untouched,
-        /// not eased) while the look-at point and distance both ease toward their targets.
-        /// Position is derived DIRECTLY from (easedFocusLookAt, forward, focusDistance) every
-        /// frame rather than through a second layer of position-level easing on top -- with zero
-        /// yaw, forward's X component is always 0, so the camera's world-X always exactly equals
-        /// easedFocusLookAt.x with no lag, which is what keeps the target from ever drifting
-        /// off-center horizontally while this leg is mid-motion.
-        /// </summary>
-        private void UpdateFocusDolly(Vector3 targetLookAt, float targetDistance, float speed, FocusPhase nextPhase)
+        /// <summary>Distance/look-at ease the whole duration; angle only starts moving in the tail (interactionFocusPitchTailSeconds) so it blends into one curve instead of a hard corner. Occlusion fade-out shares that same tail window.</summary>
+        private void UpdateZoomIn()
         {
-            transform.rotation = Quaternion.Euler(currentPitch, 0f, 0f);
+            zoomInElapsed += Time.deltaTime;
+            float duration = Mathf.Max(interactionFocusZoomInDurationSeconds, 0.0001f);
+            float t = Mathf.Min(zoomInElapsed, duration);
 
-            easedFocusLookAt = Vector3.Lerp(easedFocusLookAt, targetLookAt, Time.deltaTime * speed);
-            focusDistance = Mathf.Lerp(focusDistance, targetDistance, Time.deltaTime * speed);
-            transform.position = easedFocusLookAt - transform.forward * focusDistance;
+            float dollyProgress = Mathf.SmoothStep(0f, 1f, t / duration);
+            var targetLookAt = focusLookAtTarget;
+            float targetDistance = Mathf.Min(currentDistance, interactionFocusDistance);
+            var lookAt = Vector3.Lerp(zoomInStartLookAt, targetLookAt, dollyProgress);
+            float distance = Mathf.Lerp(zoomInStartDistance, targetDistance, dollyProgress);
 
-            if (Vector3.Distance(easedFocusLookAt, targetLookAt) < FocusLookAtEpsilon
-                && Mathf.Abs(focusDistance - targetDistance) < FocusDistanceEpsilon)
+            float pitchTail = Mathf.Clamp(interactionFocusPitchTailSeconds, 0.0001f, duration);
+            float pitchWindowStart = duration - pitchTail;
+            float pitchProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - pitchWindowStart) / pitchTail));
+            float pitch = Mathf.Lerp(zoomInStartPitch, interactionFocusPitchDegrees, pitchProgress);
+
+            float fadeWindow = Mathf.Clamp(interactionFocusOcclusionFadeSeconds, 0.0001f, duration);
+            float fadeWindowStart = duration - fadeWindow;
+            OcclusionFade01 = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - fadeWindowStart) / fadeWindow));
+            FocusedHabitatCenter = focusLookAtTarget;
+
+            ApplyDirectFraming(lookAt, pitch, distance);
+
+            if (zoomInElapsed >= duration)
             {
-                easedFocusLookAt = targetLookAt;
-                focusDistance = targetDistance;
-                transform.position = easedFocusLookAt - transform.forward * focusDistance;
-                EnterPhase(nextPhase);
+                EnterHolding();
             }
         }
 
-        /// <summary>
-        /// The angle-only leg (PitchIn / PitchOut): the look-at point and distance are both held
-        /// exactly fixed (already converged by the preceding dolly leg) while only currentPitch
-        /// eases. Position is re-derived from the same fixed look-at/distance plus the freshly
-        /// eased pitch every frame -- since look-at and distance never move here, and zero yaw
-        /// means the camera is always exactly on the "look toward look-at from this distance"
-        /// locus for any pitch, the target stays exactly centered as the angle sweeps.
-        /// </summary>
-        private void UpdateFocusPitch(float targetPitch, float speed, FocusPhase nextPhase)
-        {
-            currentPitch = Mathf.Lerp(currentPitch, targetPitch, Time.deltaTime * speed);
-            transform.rotation = Quaternion.Euler(currentPitch, 0f, 0f);
-            transform.position = easedFocusLookAt - transform.forward * focusDistance;
-
-            if (Mathf.Abs(currentPitch - targetPitch) < FocusPitchEpsilonDegrees)
-            {
-                currentPitch = targetPitch;
-                transform.rotation = Quaternion.Euler(currentPitch, 0f, 0f);
-                transform.position = easedFocusLookAt - transform.forward * focusDistance;
-                EnterPhase(nextPhase);
-            }
-        }
-
-        /// <summary>Look-at/distance/pitch are already exactly settled from PitchIn's convergence -- nothing to ease, just hold the frame and count the hold timer down.</summary>
+        /// <summary>Look-at/distance/pitch are already exactly settled from ZoomIn's convergence -- nothing to ease, just hold the frame (fully faded) and count the hold timer down.</summary>
         private void UpdateHolding()
         {
-            transform.rotation = Quaternion.Euler(currentPitch, 0f, 0f);
-            transform.position = easedFocusLookAt - transform.forward * focusDistance;
+            OcclusionFade01 = 1f;
+            FocusedHabitatCenter = focusLookAtTarget;
+            ApplyDirectFraming(currentLookAt, currentPitch, currentDistanceValue);
 
             focusHoldRemaining -= Time.deltaTime;
             if (focusHoldRemaining <= 0f)
             {
-                EnterPhase(FocusPhase.PitchOut);
+                EnterZoomOut();
             }
         }
 
-        private void EnterPhase(FocusPhase phase)
+        /// <summary>Reverse of ZoomIn: angle leads (moves in the HEAD of the duration, while still close/zoomed), distance/look-at ease the whole duration back out to whatever the live resting framing currently is. Occlusion fade-back shares the same head window.</summary>
+        private void UpdateZoomOut()
         {
-            focusPhase = phase;
-            if (phase == FocusPhase.Holding)
+            zoomOutElapsed += Time.deltaTime;
+            float duration = Mathf.Max(interactionFocusZoomOutDurationSeconds, 0.0001f);
+            float t = Mathf.Min(zoomOutElapsed, duration);
+
+            float dollyProgress = Mathf.SmoothStep(0f, 1f, t / duration);
+            var lookAt = Vector3.Lerp(zoomOutStartLookAt, lookAtTarget, dollyProgress);
+            float distance = Mathf.Lerp(zoomOutStartDistance, currentDistance, dollyProgress);
+
+            float pitchHead = Mathf.Clamp(interactionFocusPitchTailSeconds, 0.0001f, duration);
+            float pitchProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / pitchHead));
+            float pitch = Mathf.Lerp(zoomOutStartPitch, pitchDegrees, pitchProgress);
+
+            float fadeWindow = Mathf.Clamp(interactionFocusOcclusionFadeSeconds, 0.0001f, duration);
+            float fadeProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / fadeWindow));
+            OcclusionFade01 = Mathf.Lerp(1f, 0f, fadeProgress);
+            FocusedHabitatCenter = focusLookAtTarget;
+
+            ApplyDirectFraming(lookAt, pitch, distance);
+
+            if (zoomOutElapsed >= duration)
             {
-                focusHoldRemaining = interactionFocusHoldSeconds;
+                OcclusionFade01 = 0f;
+                focusPhase = FocusPhase.None;
             }
+        }
+
+        /// <summary>Sets rotation/position directly from (look-at, pitch, distance) and mirrors the result into currentPitch/currentLookAt/currentDistanceValue -- the single place every focus-phase update funnels through, so those three fields are always accurate for the next FocusOnHabitat call.</summary>
+        private void ApplyDirectFraming(Vector3 lookAt, float pitch, float distance)
+        {
+            currentPitch = pitch;
+            transform.rotation = Quaternion.Euler(pitch, 0f, 0f);
+            transform.position = lookAt - transform.forward * distance;
+
+            currentLookAt = lookAt;
+            currentDistanceValue = distance;
+        }
+
+        private void EnterHolding()
+        {
+            focusHoldRemaining = interactionFocusHoldSeconds;
+            focusPhase = FocusPhase.Holding;
+        }
+
+        private void EnterZoomOut()
+        {
+            zoomOutStartLookAt = currentLookAt;
+            zoomOutStartDistance = currentDistanceValue;
+            zoomOutStartPitch = currentPitch;
+            zoomOutElapsed = 0f;
+            focusPhase = FocusPhase.ZoomOut;
         }
 
         /// <summary>
         /// Gentle zoom toward a specific habitat when the player interacts with it (Pet/Feed/Play
         /// tap, see InputRouter.EndGesture), so the resulting reaction reads clearly even once the
-        /// zoo has grown large enough that auto-fit framing shows everything at a small size.
-        /// Runs distance and angle as two separate sequential legs (see FocusPhase) rather than
-        /// blending them, specifically so the habitat never drifts off-center mid-shift: zoom in
-        /// (distance) fully completes at the resting angle first, then the angle eases down; zoom
-        /// out reverses that order (angle up first, then distance out). Distance never goes
-        /// further out than the current auto-fit distance (see the DollyIn call site's Mathf.Min)
-        /// -- this is purely a zoom-in aid, never a step backward.
+        /// zoo has grown large enough that auto-fit framing shows everything at a small size. See
+        /// FocusPhase for how the zoom-in/hold/zoom-out sequence is timed. Distance never goes
+        /// further out than the current auto-fit distance (see UpdateZoomIn's Mathf.Min) -- this
+        /// is purely a zoom-in aid, never a step backward.
         ///
-        /// Re-triggering mid-focus (a new interaction lands while already focused, or while easing
-        /// back out from a previous one) just retargets DollyIn from wherever the eased look-at/
-        /// distance/pitch currently sit -- no special-casing needed, since every leg always eases
-        /// from its own current value regardless of which phase was active when it was called.
+        /// Re-triggering on a genuinely DIFFERENT habitat mid-focus (or while easing back out from
+        /// a previous one) always seeds the new ZoomIn from currentLookAt/currentDistanceValue/
+        /// currentPitch -- kept accurate every frame regardless of phase -- so it flows smoothly
+        /// from wherever the camera actually is instead of popping.
+        ///
+        /// Re-triggering on the SAME habitat already focused (e.g. Pet then Feed then Pet again,
+        /// all on one animal while still zoomed in -- a very common pattern) instead just refreshes
+        /// the hold timer without restarting ZoomIn from scratch: restarting it would snap
+        /// OcclusionFade01 back to 0 for the whole distance leg (since that only ramps up in
+        /// ZoomIn's tail), which very visibly un-fades every backgrounded habitat and re-fades them
+        /// a moment later even though the camera barely needs to move at all.
         /// </summary>
         public void FocusOnHabitat(Vector3 habitatWorldCenter)
         {
+            bool sameTarget = focusPhase != FocusPhase.None && Vector3.Distance(habitatWorldCenter, focusLookAtTarget) < 0.01f;
             focusLookAtTarget = habitatWorldCenter;
 
-            if (focusPhase == FocusPhase.None)
+            if (sameTarget)
             {
-                // Starting fresh from resting framing -- seed the eased values from the current
-                // resting look-at/distance so DollyIn has no pop to start from.
-                easedFocusLookAt = lookAtTarget;
-                focusDistance = currentDistance;
+                if (focusPhase == FocusPhase.Holding)
+                {
+                    focusHoldRemaining = interactionFocusHoldSeconds;
+                }
+                else if (focusPhase == FocusPhase.ZoomOut)
+                {
+                    // Already easing back out toward this same habitat's resting view -- reverse
+                    // straight back into holding it (wherever the camera currently sits, even if
+                    // not fully back to the original focus distance/angle yet) rather than
+                    // continuing to ease away and then having to zoom back in all over again.
+                    EnterHolding();
+                }
+                // else already mid-ZoomIn toward this same target -- let it keep going as-is.
+                return;
             }
 
-            focusPhase = FocusPhase.DollyIn;
+            zoomInStartLookAt = currentLookAt;
+            zoomInStartDistance = currentDistanceValue;
+            zoomInStartPitch = currentPitch;
+            zoomInElapsed = 0f;
+
+            focusPhase = FocusPhase.ZoomIn;
         }
 
         private void RefreshFraming()

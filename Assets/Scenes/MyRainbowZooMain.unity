@@ -866,10 +866,13 @@ MonoBehaviour:
   panSpeed: 6
   panEpsilon: 0.05
   interactionFocusDistance: 8
+  interactionFocusPitchDegrees: 25
   interactionFocusHoldSeconds: 4
-  interactionFocusEaseInSpeed: 3.5
-  interactionFocusPitchInSpeed: 3
-  interactionFocusEaseOutSpeed: 0.8
+  interactionFocusZoomInDurationSeconds: 1.1
+  interactionFocusPitchTailSeconds: 0.5
+  interactionFocusZoomOutDurationSeconds: 2
+  interactionFocusOcclusionOpacity: 0.1
+  interactionFocusOcclusionFadeSeconds: 0.5
 --- !u!1 &999709482
 GameObject:
   m_ObjectHideFlags: 0
