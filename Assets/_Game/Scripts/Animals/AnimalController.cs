@@ -22,6 +22,8 @@ namespace RainbowZoo.Animals
         private enum QueuedInteraction { None, Pet, Feed }
 
         [SerializeField] private float wanderRadius = 1.6f;
+        [Tooltip("Multiplies the animal prefab's own NavMeshAgent.speed -- the vendor's baked-in ambient wander speed, tuned for their original open-field demo scale -- so ordinary wandering reads as casual/relaxed rather than brisk. Went 0.7 -> 0.45 -> 0.25 across three rounds of \"tune it down even more.\" Chase/Feed-approach speed (ZooEconomyConfig.ChaseSpeed, applied and restored around agent.speed elsewhere) is a separate absolute value and unaffected by this.")]
+        [SerializeField] private float wanderSpeedMultiplier = 0.25f;
         [Tooltip("Overrides the animal prefab's own NavMeshAgent.stoppingDistance, which vendor prefabs set for their original open-field demo scale (e.g. 2 units) -- far too large for our 4x4 habitat, where it made the agent consider itself 'arrived' the instant SetDestination was called, before moving at all.")]
         [SerializeField] private float stoppingDistance = 0.15f;
         [SerializeField] private float waypointArrivalThreshold = 0.15f;
@@ -33,6 +35,8 @@ namespace RainbowZoo.Animals
         [SerializeField] private float pickupDistance = 0.5f;
         [Tooltip("Safety valve: gives up waiting to arrive at the toy or the drop point after this long, proceeding from wherever the agent actually got to, rather than risk stalling forever on an unreachable destination.")]
         [SerializeField] private float chaseTimeoutSeconds = 6f;
+        [Tooltip("Minimum time after a fresh throw before the chase is allowed to consider the toy 'caught,' even if the animal is already standing within pickupDistance of it. A 4x4 habitat is small enough that the animal can otherwise reach a just-thrown toy in a couple of frames, catching it before its bounce/flight (ToyController's PhysicMaterial) is ever actually visible -- this just makes the chase keep tracking it for a beat first.")]
+        [SerializeField] private float minToyFlightSecondsBeforePickup = 0.5f;
         [Tooltip("How many random legs the animal runs around the habitat with the toy (still at ChaseSpeed) after picking it up, before heading to the Toy Drop Point -- purely a visual flourish so Play doesn't read as an instant pickup-and-drop.")]
         [SerializeField] private int playCarryAroundLegs = 2;
         [Tooltip("Safety valve per carry-around leg -- same reasoning as chaseTimeoutSeconds.")]
@@ -87,6 +91,7 @@ namespace RainbowZoo.Animals
 
             agent = controllerPetZoo.agent;
             agent.stoppingDistance = stoppingDistance;
+            agent.speed *= wanderSpeedMultiplier;
 
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
@@ -350,8 +355,12 @@ namespace RainbowZoo.Animals
             // must never spin forever -- that stalls this animal in State.Chasing permanently,
             // which blocks Pet/Feed on it for the rest of the session. Give up and proceed from
             // wherever the agent actually got to instead.
+            //
+            // Also gated on minToyFlightSecondsBeforePickup regardless of distance -- otherwise an
+            // animal already standing near the throw point catches a just-thrown toy almost
+            // instantly, before its bounce is ever visible.
             float elapsed = 0f;
-            while (Vector3.Distance(transform.position, toy.position) > pickupDistance && elapsed < chaseTimeoutSeconds)
+            while ((elapsed < minToyFlightSecondsBeforePickup || Vector3.Distance(transform.position, toy.position) > pickupDistance) && elapsed < chaseTimeoutSeconds)
             {
                 controllerPetZoo.SetDestination(toy.position);
                 elapsed += Time.deltaTime;
@@ -378,8 +387,12 @@ namespace RainbowZoo.Animals
                 yield return null;
             }
 
+            // worldPositionStays:true keeps the toy exactly where it was carried (the attach
+            // point, e.g. mouth height) rather than snapping it to dropPoint -- there's nothing
+            // left to make it fall to the ground if it's already teleported there. Un-kinematic
+            // afterward hands it to physics from that carried position, so it drops naturally
+            // under gravity instead of popping straight to the floor.
             toy.SetParent(null, true);
-            toy.position = dropPoint.position;
             if (toyRigidbody != null) toyRigidbody.isKinematic = false;
 
             agent.speed = originalSpeed;

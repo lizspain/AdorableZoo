@@ -225,10 +225,13 @@ namespace RainbowZoo.UI
 
             float radius = bounds.extents.magnitude;
             float halfFovRad = camera.fieldOfView * 0.5f * Mathf.Deg2Rad;
-            // Tightened from 1.15 -> 1.05 (still a small buffer for the Idle loop's own motion,
-            // since bounds are only sampled once at spawn) after feedback that animals read a
-            // bit small on the tableau.
-            float distance = (radius / Mathf.Sin(halfFovRad)) * 1.05f;
+            // Tightened 1.15 -> 1.05 -> 0.7 across two rounds of "animals read too small"
+            // feedback, most recently "50% bigger" -- apparent size is ~1/margin for a fixed FOV,
+            // so 1.05 -> 0.7 (1.05/1.5) is that 1.5x applied literally. Below 1.0 the frame is
+            // TIGHTER than an exact bounds fit, so this now deliberately crops a little (tails,
+            // ear tips, the Idle loop's own motion) rather than just losing its safety buffer --
+            // untested how that reads in practice; dial back toward 1.0 if it crops too eagerly.
+            float distance = (radius / Mathf.Sin(halfFovRad)) * 0.7f;
 
             // Small 3/4-angle orbit around the subject instead of framing dead-on -- feedback
             // that a straight-on face-first view hides too much of each animal's form. Rotates

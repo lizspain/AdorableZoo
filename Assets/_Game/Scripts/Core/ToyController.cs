@@ -47,6 +47,22 @@ namespace RainbowZoo.Core
             toyMeshFilter = toy.GetComponent<MeshFilter>();
             toyMeshRenderer = toy.GetComponent<MeshRenderer>();
             toyRigidbody = toy.AddComponent<Rigidbody>();
+
+            // CreatePrimitive's SphereCollider has no PhysicMaterial at all by default, which
+            // means collisions against the habitat's Floor/Walls (also unmaterialed) fall back to
+            // Unity's zero-bounciness default -- the toy just deadened on contact instead of
+            // bouncing, no matter how hard it was thrown. bounceCombine: Maximum means this alone
+            // is enough regardless of what the Floor/Walls colliders end up with.
+            var toyCollider = toy.GetComponent<SphereCollider>();
+            toyCollider.material = new PhysicsMaterial("ToyBounce")
+            {
+                bounciness = 0.75f,
+                dynamicFriction = 0.4f,
+                staticFriction = 0.4f,
+                bounceCombine = PhysicsMaterialCombine.Maximum,
+                frictionCombine = PhysicsMaterialCombine.Average,
+            };
+
             toy.SetActive(false);
         }
 

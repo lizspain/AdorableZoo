@@ -48,10 +48,15 @@ namespace RainbowZoo.Editor
             // the wall or the floor, never the dish itself. This position is clear of all four
             // walls (well inside the +/-Half bounds on both axes), and the dish is taller and
             // wider besides, so there's nothing nearby for a slightly-off click to hit instead.
+            //
+            // Moved into the -X/-Z (lower-left, from the camera's-Z-facing view) corner per
+            // feedback -- still with the same ~0.5-unit wall clearance as the previous spot (and
+            // clear of ToyDropPoint at (0, -(Half-1))) so the raycast-competition issue above
+            // doesn't reappear.
             var dish = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             dish.name = "FoodDish";
             dish.transform.SetParent(root.transform, false);
-            dish.transform.localPosition = new Vector3(1f, 0.25f, 0.5f);
+            dish.transform.localPosition = new Vector3(-1.2f, 0.25f, -1.2f);
             dish.transform.localScale = new Vector3(0.6f, 0.3f, 0.6f);
             var dishCollider = dish.GetComponent<Collider>();
             if (dishCollider != null) dishCollider.isTrigger = true;

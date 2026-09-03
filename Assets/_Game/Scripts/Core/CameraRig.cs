@@ -119,13 +119,20 @@ namespace RainbowZoo.Core
         /// <summary>World position of the habitat currently being focused -- only meaningful while OcclusionFade01 > 0.</summary>
         public Vector3 FocusedHabitatCenter { get; private set; }
 
+        /// <summary>True for the whole ZoomIn/Holding/ZoomOut sequence -- i.e. the camera is anywhere other than its normal resting/full-zoo view. Read by ZooNavigationBarsController: the World Pan Bars are meant for navigating the wide view, not usable mid-interaction-zoom, so they hide entirely (not just become inert) while this is true.</summary>
+        public bool IsFocusActive => focusPhase != FocusPhase.None;
+
         /// <summary>True once content has grown past the 5x3 ceiling and the camera is holding distance -- the only state panning is meaningful in.</summary>
         public bool IsAtCeiling { get; private set; }
 
-        public bool CanPanLeft => IsAtCeiling && CanPanTowards(Vector3.left);
-        public bool CanPanRight => IsAtCeiling && CanPanTowards(Vector3.right);
-        public bool CanPanForward => IsAtCeiling && CanPanTowards(Vector3.forward);
-        public bool CanPanBack => IsAtCeiling && CanPanTowards(Vector3.back);
+        // !IsFocusActive here (not just in Pan() itself) is what actually hides the World Pan
+        // Bars during an interaction zoom -- ZooNavigationBarsController's visibility is driven
+        // entirely off these four, so this is the one place that needs to change to make the bars
+        // disappear whenever the camera isn't at its normal full-zoo resting view.
+        public bool CanPanLeft => IsAtCeiling && !IsFocusActive && CanPanTowards(Vector3.left);
+        public bool CanPanRight => IsAtCeiling && !IsFocusActive && CanPanTowards(Vector3.right);
+        public bool CanPanForward => IsAtCeiling && !IsFocusActive && CanPanTowards(Vector3.forward);
+        public bool CanPanBack => IsAtCeiling && !IsFocusActive && CanPanTowards(Vector3.back);
 
         private void Awake()
         {
@@ -374,11 +381,14 @@ namespace RainbowZoo.Core
         /// Moves the look-at target by worldDirection*panSpeed*deltaTime, clamped so the camera's
         /// view at the ceiling distance never shows past the outer edge of placed content in any
         /// direction (doc, section 11). No-ops outside IsAtCeiling -- panning isn't meaningful
-        /// while auto-zoom is still framing everything on its own.
+        /// while auto-zoom is still framing everything on its own. Also no-ops while IsFocusActive
+        /// (ZooNavigationBarsController hides the bars entirely in that state, so this is a
+        /// defensive backstop, not the primary guard) -- panning the wide view and being zoomed
+        /// into one specific interaction are mutually exclusive, not something to reconcile.
         /// </summary>
         public void Pan(Vector3 worldDirection, float deltaTime)
         {
-            if (!IsAtCeiling || ZooManager.Instance == null) return;
+            if (!IsAtCeiling || IsFocusActive || ZooManager.Instance == null) return;
 
             var (minX, maxX, minZ, maxZ) = ComputePanBounds(ComputeContentBounds());
             var candidate = lookAtTarget + worldDirection.normalized * (panSpeed * deltaTime);

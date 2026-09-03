@@ -158,11 +158,9 @@ namespace RainbowZoo.Core
 
         private void DragToy(Vector2 screenPos)
         {
-            var worldPoint = ProjectToHabitatPlane(pressedHabitat, screenPos);
-            if (!worldPoint.HasValue) return;
-
-            pressedHabitat.Toy?.UpdateHoldPosition(worldPoint.Value);
-            lastDragPoint = worldPoint.Value;
+            var worldPoint = ComputeDragPoint(pressedHabitat, screenPos);
+            pressedHabitat.Toy?.UpdateHoldPosition(worldPoint);
+            lastDragPoint = worldPoint;
         }
 
         private void EndGesture(Vector2 screenPos)
@@ -213,11 +211,10 @@ namespace RainbowZoo.Core
         }
 
         /// <summary>
-        /// Ray-plane intersection at the habitat's ground height, clamped to stay within the
-        /// habitat's actual footprint (HabitatRuntime.HalfExtent, minus a small margin so it
-        /// doesn't visually clip into the walls). Without this, a drag that leaves the habitat
-        /// (or the screen) keeps following the cursor arbitrarily far outside it, and the
-        /// eventual throw fires from wherever that was -- often outside the walls entirely.
+        /// Ray-plane intersection at the habitat's ground height, clamped to the habitat's actual
+        /// footprint. Used only to establish the ONE-OFF starting point of a hold (where the
+        /// finger first crossed the tap thresholds) -- see ComputeDragPoint for why continuous
+        /// per-frame dragging no longer uses this.
         /// </summary>
         private Vector3? ProjectToHabitatPlane(HabitatRuntime habitat, Vector2 screenPos)
         {
@@ -226,13 +223,49 @@ namespace RainbowZoo.Core
             var ray = worldCamera.ScreenPointToRay(screenPos);
             if (!plane.Raycast(ray, out float distance)) return null;
 
-            var point = ray.GetPoint(distance);
+            return ClampToHabitatFloor(habitat, ray.GetPoint(distance));
+        }
+
+        /// <summary>
+        /// Slingshot drag: the toy's position is holdStartPoint plus the screen-space drag delta
+        /// (since the hold began) converted to world units along the camera's own ground-projected
+        /// right/forward axes, at a FIXED world-units-per-pixel scale -- not a fresh ground-plane
+        /// raycast every frame. A per-frame raycast is nonlinear for a camera pitched down at a
+        /// fixed angle: the same screen-pixel delta covers very different world distances
+        /// depending on whether the ray is nearer the horizon (shallow, covers lots of ground) or
+        /// nearer straight-down (steep, covers little), which is exactly why dragging toward the
+        /// top of the screen reached the habitat wall almost immediately while dragging toward the
+        /// bottom barely moved the toy at all before this fix. A uniform linear scale is symmetric
+        /// in every screen direction by construction, gains more world displacement (and therefore
+        /// throw speed, in EndGesture) the further the drag goes -- exactly the "pull back on a
+        /// rubber band" feel asked for -- and is still clamped to the habitat's own footprint, so
+        /// the toy never passes through a wall regardless of how far the finger drags.
+        /// </summary>
+        private Vector3 ComputeDragPoint(HabitatRuntime habitat, Vector2 screenPos)
+        {
+            var camTransform = worldCamera.transform;
+            Vector3 groundRight = camTransform.right;
+            Vector3 groundForward = new Vector3(camTransform.forward.x, 0f, camTransform.forward.z).normalized;
+
+            float planeHeight = habitat.transform.position.y + dragHeightOffset;
+            float distanceToGround = Mathf.Max(0.01f, Mathf.Abs(camTransform.position.y - planeHeight));
+            float worldUnitsPerPixel = 2f * distanceToGround * Mathf.Tan(worldCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) / Screen.height;
+
+            Vector2 screenDelta = screenPos - pressScreenPos;
+            Vector3 worldDelta = groundRight * (screenDelta.x * worldUnitsPerPixel) + groundForward * (screenDelta.y * worldUnitsPerPixel);
+
+            return ClampToHabitatFloor(habitat, holdStartPoint + worldDelta);
+        }
+
+        /// <summary>Clamps a world point's X/Z to the habitat's actual footprint (HabitatRuntime.HalfExtent, minus a small margin so the toy doesn't visually clip into the walls) and pins Y to the habitat's drag-height plane.</summary>
+        private Vector3 ClampToHabitatFloor(HabitatRuntime habitat, Vector3 point)
+        {
             var center = habitat.transform.position;
             float limit = HabitatRuntime.HalfExtent - dragClampMargin;
             float clampedX = Mathf.Clamp(point.x - center.x, -limit, limit);
             float clampedZ = Mathf.Clamp(point.z - center.z, -limit, limit);
 
-            return new Vector3(center.x + clampedX, point.y, center.z + clampedZ);
+            return new Vector3(center.x + clampedX, center.y + dragHeightOffset, center.z + clampedZ);
         }
 
         private bool IsInDeadZone(Vector2 screenPos)
