@@ -22,6 +22,8 @@ namespace RainbowZoo.Core
         public static readonly Color PetColor = Color.red;
         public static readonly Color FeedColor = Color.blue;
         public static readonly Color PlayColor = Color.green;
+        /// <summary>Placeholder Care Meter heart-gain burst -- distinct from PetColor/FeedColor/PlayColor above (which mark a reaction *starting*), fired instead at the moment ZooManager.ReportInteractionHearts actually adds hearts.</summary>
+        public static readonly Color CareColor = Color.yellow;
 
         private const float BurstLifetimeSeconds = 0.5f;
         private const float ReturnDelaySeconds = BurstLifetimeSeconds + 0.1f;

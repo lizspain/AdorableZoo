@@ -398,6 +398,7 @@ namespace RainbowZoo.Animals
             agent.speed = originalSpeed;
 
             controllerPetZoo.Jump();
+            DebugInteractionVfx.SpawnBurst(dropPoint.position + Vector3.up * 0.3f, DebugInteractionVfx.CareColor);
             ZooManager.Instance.ReportInteractionHearts(economyConfig.PlayHearts);
             onDropped?.Invoke();
 
@@ -436,6 +437,7 @@ namespace RainbowZoo.Animals
 
             controllerPetZoo.mecanim.SetBool(animatorBoolParam, false);
             controllerPetZoo.Jump();
+            DebugInteractionVfx.SpawnBurst(transform.position + Vector3.up * 0.5f, DebugInteractionVfx.CareColor);
             ZooManager.Instance.ReportInteractionHearts(heartsEarned);
 
             yield return new WaitForSeconds(jumpCelebrationSeconds);
@@ -493,6 +495,7 @@ namespace RainbowZoo.Animals
             yield return new WaitForSeconds(economyConfig.FeedAnimationSeconds);
             controllerPetZoo.mecanim.SetBool(ParamEating, false);
 
+            DebugInteractionVfx.SpawnBurst(burstPosition + Vector3.up * 0.3f, DebugInteractionVfx.CareColor);
             ZooManager.Instance.ReportInteractionHearts(economyConfig.FeedHearts);
 
             state = State.IdleWander;

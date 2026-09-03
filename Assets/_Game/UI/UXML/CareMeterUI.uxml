@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="project://database/Assets/_Game/UI/USS/theme.uss" />
+    <Style src="project://database/Assets/_Game/UI/USS/CareMeterUI.uss" />
+    <ui:VisualElement name="care-meter-root" class="care-meter-root rainbow-zoo-theme" picking-mode="Ignore">
+        <ui:VisualElement name="care-meter-track" class="care-meter-track">
+            <ui:VisualElement name="care-meter-fill" class="care-meter-fill" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

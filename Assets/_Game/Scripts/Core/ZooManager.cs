@@ -50,6 +50,9 @@ namespace RainbowZoo.Core
         /// <summary>Raised the moment the shared Care Meter fills (section 6/7).</summary>
         public event Action OnCareMeterComplete;
 
+        /// <summary>Raised (currentHearts, currentThreshold) every time ReportInteractionHearts changes the Care Meter -- for a fill UI driven off partial progress, not just OnCareMeterComplete. Fires twice on a completing increment: once showing the just-filled state, again right after the reset to the next cycle's 0/newThreshold, so a listener sees both rather than jumping straight past the full moment.</summary>
+        public event Action<int, int> OnCareHeartsChanged;
+
         /// <summary>Raised after each new habitat is placed and recorded, so CameraRig (section 11) can refresh its framing.</summary>
         public event Action<PlotCoordinate> OnHabitatPlaced;
 
@@ -282,6 +285,7 @@ namespace RainbowZoo.Core
         {
             careMeterState.AddHearts(hearts);
             Debug.Log($"[CareMeter] {careMeterState.currentHearts}/{careMeterState.currentThreshold}");
+            OnCareHeartsChanged?.Invoke(careMeterState.currentHearts, careMeterState.currentThreshold);
 
             if (careMeterState.IsComplete)
             {
@@ -293,6 +297,7 @@ namespace RainbowZoo.Core
                 }
 
                 careMeterState.StartNextCycle(economyConfig.Threshold(layoutState.Count + 1));
+                OnCareHeartsChanged?.Invoke(careMeterState.currentHearts, careMeterState.currentThreshold);
                 RequestNextTableau();
             }
 

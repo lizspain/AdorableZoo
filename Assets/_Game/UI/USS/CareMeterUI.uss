@@ -1,0 +1,43 @@
+/* Full-screen host, flex-centered so the track needs no manual width/margin centering math --
+   the only child, so align-items: center is all that's needed to keep it horizontally centered. */
+.care-meter-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+}
+
+/* Center-top, just below where the top World Pan Bar sits when visible (ZooNavigationBars.uss:
+   height 60px) -- the two never overlap even though the bars only show once the zoo's grown past
+   the auto-zoom ceiling, while this is visible from the very first animal placed. */
+.care-meter-track {
+    margin-top: 72px;
+    width: 220px;
+    height: 22px;
+    border-top-left-radius: 11px;
+    border-top-right-radius: 11px;
+    border-bottom-left-radius: 11px;
+    border-bottom-right-radius: 11px;
+    background-color: var(--color-birch-base);
+    border-width: 3px;
+    border-color: var(--color-gold-birch);
+    overflow: hidden;
+}
+
+/* Left-anchored fill that grows with Care Meter progress (CareMeterUIController, driven by
+   ZooManager.OnCareHeartsChanged) -- width transition (not an instant snap) so each heart gain
+   reads as a small, satisfying grow rather than a jump cut, matching the "gentle" pointer already
+   applied to the camera focus/occlusion-fade timing elsewhere in this phase. */
+.care-meter-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0%;
+    background-color: var(--color-rose-birch);
+    transition-property: width;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-out-sine;
+}
