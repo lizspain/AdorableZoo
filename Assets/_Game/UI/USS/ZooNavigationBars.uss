@@ -6,9 +6,16 @@
     bottom: 0;
 }
 
+/* Translucent dyed-birch pan strips: the same grain-multiplied-by-dye recipe as the wood pieces
+   (theme.uss), kept at low opacity so they read as a hint at the edge, not a control. */
 .nav-bar {
     position: absolute;
     background-color: var(--color-gold-birch);
+    background-image: url("project://database/Assets/Birch_Tex.png?fileID=2800000&guid=705d613370c837448b6155bef91bd83a&type=3#Birch_Tex");
+    -unity-background-image-tint-color: var(--color-gold-birch);
+    background-size: 640px 640px;
+    background-repeat: repeat;
+    background-position: center;
     opacity: 0.35;
 }
 
@@ -17,6 +24,8 @@
     top: 0;
     bottom: 0;
     width: 60px;
+    border-right-width: 4px;
+    border-right-color: var(--color-side-golden);
 }
 
 .nav-bar--right {
@@ -24,6 +33,8 @@
     top: 0;
     bottom: 0;
     width: 60px;
+    border-left-width: 4px;
+    border-left-color: rgba(255, 255, 255, 0.6);
 }
 
 .nav-bar--top {
@@ -31,6 +42,8 @@
     left: 0;
     right: 0;
     height: 60px;
+    border-bottom-width: 4px;
+    border-bottom-color: var(--color-side-golden);
 }
 
 .nav-bar--bottom {
@@ -38,4 +51,6 @@
     left: 0;
     right: 0;
     height: 60px;
+    border-top-width: 4px;
+    border-top-color: rgba(255, 255, 255, 0.6);
 }

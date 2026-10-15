@@ -1,16 +1,210 @@
 /*
- * Rainbow Zoo shared design tokens -- placeholder values derived from the design doc's
- * "dyed birchwood, jewel-tone" palette description (rose/cobalt/emerald/gold/deep-lilac
- * dyes over a birch base), pending real values pulled from Figma. Apply the
- * "rainbow-zoo-theme" class to a screen's root VisualElement to use these.
+ * Rainbow Zoo shared design tokens + "Montessori birch" material classes, ported from the
+ * Figma Make Montessori UI (dyed/whitewashed solid birch: pillowed pegs and blocks, routed
+ * cavities, a thick whitewashed modal slab). Apply the "rainbow-zoo-theme" class to a screen's
+ * root VisualElement to use these.
+ *
+ * Material model (USS has no box-shadow/gradients, so depth is built from what it does have):
+ *   - Grain: Assets/Birch_Tex.png tiled over the element and multiplied by the dye colour via
+ *     -unity-background-image-tint-color (the Figma "birch-grain multiply over dye" recipe).
+ *   - Bevel + side wall: per-side border colours -- lit rim top/left, shaded rim right, and a
+ *     thick darker bottom border standing in for the lower side wall / cast shadow.
+ *   - Press travel: ":active" translates the element down and darkens the side wall.
+ *
+ * Usage: combine a material class with a colour class, e.g. "wood-block wood--cobalt".
+ *   .wood-block  raised, pillowed peg/block (buttons, tiles)
+ *   .wood-cavity routed well/slideway the blocks sit in (trough of a meter, a recessed slot)
+ *   .wood-slab   thick whitewashed birch panel (modals)
  */
 .rainbow-zoo-theme {
-    --color-rose-birch: #B96A72;
-    --color-cobalt-birch: #3B6B8C;
-    --color-emerald-birch: #5F7A63;
-    --color-gold-birch: #B8912F;
-    --color-gold-birch-light: #F4E7C6;
-    --color-lilac-birch: #7A5C8C;
-    --color-ink: #3A2F27;
-    --color-birch-base: #E8D9BE;
+    /* Dye palette. The "-birch" names predate the Figma port and are kept so existing
+       sheets keep resolving: rose -> Cherry Red, gold -> Golden Yellow, lilac -> Amethyst. */
+    --color-birch-base: #EEDCC4;
+    --color-rose-birch: #7F1D1D;
+    --color-cobalt-birch: #0C4A6E;
+    --color-emerald-birch: #548457;
+    --color-gold-birch: #EE9F18;
+    --color-orange-birch: #E45B14;
+    --color-lilac-birch: #6A156F;
+
+    /* Neutrals */
+    --color-gold-birch-light: #F5EBCF;
+    --color-modal-face: #FFFBEB;
+    --color-paper: #F5EBCF;
+    --color-ink: #5F3C33;
+    --color-ink-soft: #8C5B4E;
+
+    /* Side-wall (lower edge) tone for each dye */
+    --color-side-natural: #A98F75;
+    --color-side-cherry: #541010;
+    --color-side-cobalt: #07324C;
+    --color-side-sage: #385C3B;
+    --color-side-golden: #A8680A;
+    --color-side-orange: #9C360B;
+    --color-side-amethyst: #450B4A;
+
+    /* Modal lower lip */
+    --color-slab-lip: #CBAEA3;
+    --color-slab-lip-dark: #AA7A6C;
+
+    /* Routed cavity */
+    --color-cavity-fill: #B58B76;
+    --color-cavity-tint: #C9A58F;
+    --color-cavity-shadow: rgba(106, 62, 49, 0.78);
+    --color-cavity-light: rgba(255, 245, 200, 0.50);
+}
+
+/* ---- Dye variants: face, side wall, deepest side wall, painted-mark colour ---- */
+
+.wood--natural {
+    --wood-face: #EEDCC4;
+    --wood-side: #A98F75;
+    --wood-side-dark: #755C49;
+    --wood-mark: #5D3E34;
+}
+
+.wood--cherry {
+    --wood-face: #7F1D1D;
+    --wood-side: #541010;
+    --wood-side-dark: #350909;
+    --wood-mark: #FFE7DF;
+}
+
+.wood--cobalt {
+    --wood-face: #0C4A6E;
+    --wood-side: #07324C;
+    --wood-side-dark: #041F30;
+    --wood-mark: #D9F2FF;
+}
+
+.wood--sage {
+    --wood-face: #548457;
+    --wood-side: #385C3B;
+    --wood-side-dark: #233D26;
+    --wood-mark: #E4F4DF;
+}
+
+.wood--golden {
+    --wood-face: #EE9F18;
+    --wood-side: #A8680A;
+    --wood-side-dark: #704507;
+    --wood-mark: #FFF5D8;
+}
+
+.wood--orange {
+    --wood-face: #E45B14;
+    --wood-side: #9C360B;
+    --wood-side-dark: #672307;
+    --wood-mark: #FFE5D5;
+}
+
+.wood--amethyst {
+    --wood-face: #6A156F;
+    --wood-side: #450B4A;
+    --wood-side-dark: #2B062F;
+    --wood-mark: #FBE1FF;
+}
+
+/* ---- Raised pillowed block ---- */
+
+.wood-block {
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    background-color: var(--wood-face);
+    background-image: url("project://database/Assets/Birch_Tex.png?fileID=2800000&guid=705d613370c837448b6155bef91bd83a&type=3#Birch_Tex");
+    -unity-background-image-tint-color: var(--wood-face);
+    background-size: 640px 640px;
+    background-repeat: repeat;
+    background-position: center;
+    border-top-width: 2px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 7px;
+    border-top-color: rgba(255, 255, 255, 0.34);
+    border-left-color: rgba(255, 255, 255, 0.20);
+    border-right-color: rgba(0, 0, 0, 0.14);
+    border-bottom-color: var(--wood-side);
+    color: var(--wood-mark);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    letter-spacing: 1px;
+    translate: 0 0;
+    transition-property: translate;
+    transition-duration: 0.07s;
+    transition-timing-function: ease-out-cubic;
+}
+
+/* Restating the colours on every interaction state keeps the stock Button theme's grey hover /
+   focus / active borders from showing through the bevel. */
+.wood-block:hover,
+.wood-block:focus {
+    background-color: var(--wood-face);
+    border-top-color: rgba(255, 255, 255, 0.34);
+    border-left-color: rgba(255, 255, 255, 0.20);
+    border-right-color: rgba(0, 0, 0, 0.14);
+    border-bottom-color: var(--wood-side);
+}
+
+/* Pressed: the peg settles into its cavity -- it travels down and the side wall goes deepest. */
+.wood-block:active {
+    background-color: var(--wood-face);
+    border-top-color: rgba(255, 255, 255, 0.20);
+    border-left-color: rgba(255, 255, 255, 0.12);
+    border-right-color: rgba(0, 0, 0, 0.18);
+    border-bottom-color: var(--wood-side-dark);
+    translate: 0 4px;
+}
+
+/* ---- Routed cavity (a carved well the blocks sit in) ---- */
+
+.wood-cavity {
+    background-color: var(--color-cavity-fill);
+    background-image: url("project://database/Assets/Birch_Tex.png?fileID=2800000&guid=705d613370c837448b6155bef91bd83a&type=3#Birch_Tex");
+    -unity-background-image-tint-color: var(--color-cavity-tint);
+    background-size: 640px 640px;
+    background-repeat: repeat;
+    background-position: center;
+    border-top-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    /* Inverted bevel: the cut edge's shadow sits top/left, reflected light bottom/right. */
+    border-top-color: var(--color-cavity-shadow);
+    border-left-color: var(--color-cavity-shadow);
+    border-right-color: var(--color-cavity-light);
+    border-bottom-color: var(--color-cavity-light);
+}
+
+/* ---- Whitewashed birch slab (modal) ---- */
+
+.wood-slab {
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+    background-color: var(--color-modal-face);
+    background-image: url("project://database/Assets/Birch_Tex.png?fileID=2800000&guid=705d613370c837448b6155bef91bd83a&type=3#Birch_Tex");
+    /* Low alpha lets the solid whitewash dominate and the grain stay quiet. */
+    -unity-background-image-tint-color: rgba(255, 255, 255, 0.40);
+    background-size: 1024px 1024px;
+    background-repeat: repeat;
+    background-position: center;
+    border-top-width: 2px;
+    border-left-width: 2px;
+    border-right-width: 3px;
+    border-bottom-width: 8px;
+    border-top-color: rgba(255, 255, 255, 0.95);
+    border-left-color: rgba(255, 255, 255, 0.60);
+    border-right-color: rgba(112, 91, 55, 0.22);
+    border-bottom-color: var(--color-slab-lip);
 }

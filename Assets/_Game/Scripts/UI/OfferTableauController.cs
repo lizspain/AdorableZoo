@@ -27,10 +27,11 @@ namespace RainbowZoo.UI
         private const float CelebrateSecondsBeforePlacing = 0.8f;
         private static readonly Vector3 PedestalAreaOrigin = new Vector3(500f, 50f, 0f);
 
-        // #E8D9BE (--color-birch-base, theme.uss), opaque -- the preview camera's backdrop, so an
-        // uninstantiated corner of the render texture reads as "matches the card" rather than a
-        // stray solid color.
-        private static readonly Color PedestalBackgroundColor = new Color(0.9098039f, 0.8509804f, 0.74509805f, 1f);
+        // Fully transparent -- the preview camera clears to alpha 0 so only the animal itself
+        // draws, directly on the offer block's painted face (no backdrop box around it). RGB is
+        // kept at the old birch tone so any semi-transparent edge pixels blend toward it, not
+        // toward black.
+        private static readonly Color PedestalBackgroundColor = new Color(0.9098039f, 0.8509804f, 0.74509805f, 0f);
 
         private sealed class SlotPreview
         {
@@ -175,7 +176,8 @@ namespace RainbowZoo.UI
 
             var animator = modelInstance.GetComponentInChildren<Animator>();
 
-            var renderTexture = new RenderTexture(RenderTextureSize, RenderTextureSize, 16)
+            // Explicit ARGB32: the alpha channel is what lets the UI show through around the animal.
+            var renderTexture = new RenderTexture(RenderTextureSize, RenderTextureSize, 16, RenderTextureFormat.ARGB32)
             {
                 name = $"TableauPreviewRT_{slotIndex}"
             };

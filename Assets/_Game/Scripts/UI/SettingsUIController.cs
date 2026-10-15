@@ -18,6 +18,7 @@ namespace RainbowZoo.UI
     public sealed class SettingsUIController : MonoBehaviour
     {
         private const float HoldSecondsToActivate = 4f;
+        private const float HoldFillStart = 0.25f;
 
         private UIDocument document;
         private VisualElement gate, gateFill, menu, resetConfirm;
@@ -41,6 +42,12 @@ namespace RainbowZoo.UI
             {
                 Debug.LogError("SettingsUI.uxml is missing the 'settings-gate' VisualElement -- check the UXML loaded correctly.", this);
                 return;
+            }
+
+            // OnEnable can run again after a disable/enable cycle -- only add the icon once.
+            if (gate.Q<GearIcon>() == null)
+            {
+                gate.Add(new GearIcon());
             }
 
             gate.RegisterCallback<PointerDownEvent>(_ => StartHold());
@@ -69,6 +76,8 @@ namespace RainbowZoo.UI
         {
             isHolding = true;
             holdElapsed = 0f;
+            // Show the fill the instant the press lands, so a tap visibly "registers" at once.
+            SetFill(HoldFillStart);
         }
 
         private void CancelHold()
@@ -83,7 +92,8 @@ namespace RainbowZoo.UI
             if (!isHolding) return;
 
             holdElapsed += Time.deltaTime;
-            SetFill(Mathf.Clamp01(holdElapsed / HoldSecondsToActivate));
+            // Runs from HoldFillStart (the press) up to full at HoldSecondsToActivate.
+            SetFill(Mathf.Lerp(HoldFillStart, 1f, Mathf.Clamp01(holdElapsed / HoldSecondsToActivate)));
 
             if (holdElapsed >= HoldSecondsToActivate)
             {
@@ -127,6 +137,91 @@ namespace RainbowZoo.UI
         {
             CloseAll();
             ZooManager.Instance?.ResetZoo();
+        }
+
+        /// <summary>
+        /// The gear on the gate peg, in the Figma Make kit's "dark carved" marking style: a dark
+        /// brown cut (#4E3028, solid) with a faint light lip just under it, as if routed into the
+        /// birch. Drawn with Painter2D -- no texture asset needed. The gate's USS opacity applies
+        /// on top of this, so the icon stays as subdued as the rest of the parent-facing control.
+        /// </summary>
+        private sealed class GearIcon : VisualElement
+        {
+            private const int Teeth = 8;
+            private const float IconFillOfBox = 0.80f;   // gear diameter as a share of the gate's inner box
+            private const float RootRadius = 0.72f;      // tooth base, as a share of the outer radius
+            private const float HoleRadius = 0.30f;
+            private const float ToothBaseHalfDegrees = 14f;
+            private const float ToothTipHalfDegrees = 9f;
+
+            private static readonly Color CarvedColor = new Color(0x4E / 255f, 0x30 / 255f, 0x28 / 255f, 1f);
+            private static readonly Color LipColor = new Color(1f, 1f, 1f, 0.5f);
+
+            public GearIcon()
+            {
+                name = "settings-gate-icon";
+                pickingMode = PickingMode.Ignore; // the gate's own hold gesture must see every press
+                style.position = Position.Absolute;
+                style.left = 0f;
+                style.top = 0f;
+                style.right = 0f;
+                style.bottom = 0f;
+                generateVisualContent += OnGenerateVisualContent;
+            }
+
+            private void OnGenerateVisualContent(MeshGenerationContext mgc)
+            {
+                var rect = contentRect;
+                if (rect.width <= 0f || rect.height <= 0f) return;
+
+                float outerRadius = Mathf.Min(rect.width, rect.height) * 0.5f * IconFillOfBox;
+                var painter = mgc.painter2D;
+
+                DrawGear(painter, rect.center + new Vector2(0f, 1f), outerRadius, LipColor);
+                DrawGear(painter, rect.center, outerRadius, CarvedColor);
+            }
+
+            private static void DrawGear(Painter2D painter, Vector2 center, float outerRadius, Color color)
+            {
+                float rootRadius = outerRadius * RootRadius;
+
+                painter.fillColor = color;
+                painter.BeginPath();
+
+                bool first = true;
+                for (int tooth = 0; tooth < Teeth; tooth++)
+                {
+                    float angle = tooth * 360f / Teeth;
+                    AddPoint(painter, center, rootRadius, angle - ToothBaseHalfDegrees, ref first);
+                    AddPoint(painter, center, outerRadius, angle - ToothTipHalfDegrees, ref first);
+                    AddPoint(painter, center, outerRadius, angle + ToothTipHalfDegrees, ref first);
+                    AddPoint(painter, center, rootRadius, angle + ToothBaseHalfDegrees, ref first);
+                }
+                painter.ClosePath();
+
+                // The axle hole is a second subpath in the same fill; even-odd leaves it empty.
+                float holeRadius = outerRadius * HoleRadius;
+                painter.MoveTo(center + new Vector2(holeRadius, 0f));
+                painter.Arc(center, holeRadius, Angle.Degrees(0f), Angle.Degrees(360f));
+                painter.ClosePath();
+
+                painter.Fill(FillRule.OddEven);
+            }
+
+            private static void AddPoint(Painter2D painter, Vector2 center, float radius, float degrees, ref bool first)
+            {
+                float radians = degrees * Mathf.Deg2Rad;
+                var point = center + new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * radius;
+                if (first)
+                {
+                    painter.MoveTo(point);
+                    first = false;
+                }
+                else
+                {
+                    painter.LineTo(point);
+                }
+            }
         }
     }
 }

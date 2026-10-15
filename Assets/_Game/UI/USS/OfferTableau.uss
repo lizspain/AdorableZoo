@@ -8,43 +8,57 @@
     justify-content: center;
 }
 
+/* The pop-up the three offers sit on: a thick whitewashed birch slab ("wood-slab", theme.uss),
+   the same modal treatment as the settings panel. */
+.offer-panel {
+    /* Margin around the blocks was doubled from 26/28/22/22. Side padding is 44 because each block
+       carries its own 20px side margin: 44 + 20 = 64 of wood between the slab's edge and the
+       blocks (top/bottom 52/56). */
+    padding-top: 52px;
+    padding-bottom: 56px;
+    padding-left: 44px;
+    padding-right: 44px;
+}
+
 .slot-row {
     flex-direction: row;
 }
 
+/* Wide birch block ("wood-block wood--natural", theme.uss) -- size and corner softness are
+   set here; the pillowed rim, grain and pressed travel come from the shared material. */
 .offer-slot {
-    width: 180px;
-    height: 220px;
-    margin-left: 16px;
-    margin-right: 16px;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
-    background-color: var(--color-birch-base);
-    border-width: 4px;
-    border-color: var(--color-gold-birch);
-    color: var(--color-ink);
+    width: 225px;
+    height: 275px;
+    margin-left: 20px;
+    margin-right: 20px;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+    border-bottom-width: 9px;
     font-size: 20px;
-    -unity-text-align: middle-center;
     white-space: normal;
 }
 
+/* Mythical offers swap the block's dye from natural birch to Amethyst by overriding the material variables
+   (OfferTableauController toggles this class), so the rim, side wall and press states all follow. */
 .offer-slot--mythical {
-    border-color: var(--color-lilac-birch);
-    background-color: var(--color-gold-birch-light);
+    --wood-face: #6A156F;
+    --wood-side: #450B4A;
+    --wood-side-dark: #2B062F;
+    --wood-mark: #FBE1FF;
 }
 
-/* Fills the slot with the live 3D preview render texture (OfferTableauController) -- the
-   button's own rounded corners/border still show around it since this sits slightly inset. */
+/* The live 3D preview render texture (OfferTableauController). The preview camera clears to
+   transparent, so the animal sits directly on the block's painted face with no backdrop. */
 .offer-slot-image {
     position: absolute;
-    left: 4px;
-    top: 4px;
-    right: 4px;
-    bottom: 4px;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    border-bottom-left-radius: 20px;
-    border-bottom-right-radius: 20px;
+    left: 6px;
+    top: 6px;
+    right: 6px;
+    bottom: 6px;
 }

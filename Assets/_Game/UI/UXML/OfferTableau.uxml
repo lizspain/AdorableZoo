@@ -2,16 +2,18 @@
     <Style src="project://database/Assets/_Game/UI/USS/theme.uss" />
     <Style src="project://database/Assets/_Game/UI/USS/OfferTableau.uss" />
     <ui:VisualElement name="offer-tableau-root" class="offer-tableau-root rainbow-zoo-theme">
-        <ui:VisualElement name="slot-row" class="slot-row">
-            <ui:Button name="slot-0" class="offer-slot">
-                <ui:Image name="slot-0-image" class="offer-slot-image" picking-mode="Ignore" />
-            </ui:Button>
-            <ui:Button name="slot-1" class="offer-slot">
-                <ui:Image name="slot-1-image" class="offer-slot-image" picking-mode="Ignore" />
-            </ui:Button>
-            <ui:Button name="slot-2" class="offer-slot">
-                <ui:Image name="slot-2-image" class="offer-slot-image" picking-mode="Ignore" />
-            </ui:Button>
+        <ui:VisualElement name="offer-panel" class="offer-panel wood-slab">
+            <ui:VisualElement name="slot-row" class="slot-row">
+                <ui:Button name="slot-0" class="offer-slot wood-block wood--natural">
+                    <ui:Image name="slot-0-image" class="offer-slot-image" picking-mode="Ignore" />
+                </ui:Button>
+                <ui:Button name="slot-1" class="offer-slot wood-block wood--natural">
+                    <ui:Image name="slot-1-image" class="offer-slot-image" picking-mode="Ignore" />
+                </ui:Button>
+                <ui:Button name="slot-2" class="offer-slot wood-block wood--natural">
+                    <ui:Image name="slot-2-image" class="offer-slot-image" picking-mode="Ignore" />
+                </ui:Button>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

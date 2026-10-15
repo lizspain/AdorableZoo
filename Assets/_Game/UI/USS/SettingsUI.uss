@@ -8,85 +8,76 @@
 
 /* Deliberately small and low-opacity ("a single small icon tucked outside the primary play
    area", design doc section 12) -- this is a parent-facing control, not something meant to draw
-   a child's attention or tempt an idle tap. */
+   a child's attention or tempt an idle tap. Material comes from "wood-block wood--natural"
+   (theme.uss): a small round birch peg; the thick bottom edge is trimmed to suit its size. */
 .settings-gate {
     position: absolute;
     top: 16px;
     right: 16px;
-    width: 36px;
-    height: 36px;
-    border-top-left-radius: 18px;
-    border-top-right-radius: 18px;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-    background-color: var(--color-birch-base);
-    border-width: 2px;
-    border-color: var(--color-gold-birch);
-    opacity: 0.5;
+    width: 40px;
+    height: 40px;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    border-bottom-width: 4px;
+    /* The gear (GearIcon in SettingsUIController) is a solid dark carved brown and this opacity
+       multiplies it, so it needs to stay high for the icon to read as dark as the concept art. */
+    opacity: 0.85;
     overflow: hidden;
 }
 
-/* Bottom-anchored fill that grows over the 4-second hold, so a parent gets visible progress
-   feedback rather than wondering whether the press registered at all. */
+/* Bottom-anchored fill that grows over the 4-second hold (starting at 25% the instant the press
+   lands -- SettingsUIController), so a parent gets visible progress feedback rather than
+   wondering whether the press registered at all. Cobalt, to read clearly against the birch peg. */
 .settings-gate-fill {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
     height: 0%;
-    background-color: var(--color-gold-birch);
+    background-color: var(--color-cobalt-birch);
 }
 
+/* Whitewashed birch slab ("wood-slab", theme.uss). Right/left padding is a touch generous so
+   the buttons sit clear of the rolled edge. */
 .settings-panel {
     position: absolute;
     top: 60px;
     right: 16px;
-    width: 240px;
-    padding-top: 16px;
-    padding-bottom: 16px;
-    padding-left: 16px;
-    padding-right: 16px;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    border-bottom-left-radius: 20px;
-    border-bottom-right-radius: 20px;
-    background-color: var(--color-birch-base);
-    border-width: 3px;
-    border-color: var(--color-gold-birch);
+    width: 256px;
+    padding-top: 18px;
+    padding-bottom: 14px;
+    padding-left: 18px;
+    padding-right: 18px;
     align-items: stretch;
 }
 
 .settings-panel-title {
     color: var(--color-ink);
-    font-size: 16px;
+    font-size: 18px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
     -unity-text-align: middle-center;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .settings-panel-title--wrap {
     white-space: normal;
 }
 
+/* Colour is chosen in UXML with a wood--* class (default cobalt, wood--cherry for the
+   destructive action, wood--natural for the quiet "Close"/"Cancel"). */
 .settings-button {
-    margin-bottom: 8px;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    background-color: var(--color-cobalt-birch);
-    color: white;
-    border-width: 0;
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
-.settings-button--danger {
-    background-color: var(--color-rose-birch);
-}
-
-.settings-button--secondary {
-    background-color: var(--color-birch-base);
-    color: var(--color-ink);
-    border-width: 2px;
-    border-color: var(--color-gold-birch);
+    margin-bottom: 12px;
+    min-height: 46px;
+    font-size: 16px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
 }
